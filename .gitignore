@@ -3,4 +3,5 @@
 __pycache__
 myvenv
 .DS_Store
+.pytest_cache
 
