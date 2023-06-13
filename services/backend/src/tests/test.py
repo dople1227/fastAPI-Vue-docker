@@ -11,3 +11,4 @@ def test_get_model(test_app):
     print("\n" + str(response.json()), end="\n")
     print("\nAfter response", end="\n")
     assert response.json() == {"model_name": "lenet", "message": "LeCNN all the images"}
+

@@ -2,6 +2,9 @@
   <div>
     <p>{{ msg }}</p>
   </div>
+  <div>
+    <button @click="sendPostRequest">POST 요청 보내기</button>
+  </div>
 </template>
 
 <script>
@@ -21,6 +24,20 @@ export default {
           this.msg = res.data;
         })
         .catch((error) => {
+          console.error(error);
+        });
+    },
+    sendPostRequest() {
+      const data = {
+        // title: '제목',
+        // content: '내용'
+      };
+      console.log("click event")
+      axios.post('http://localhost:8000/todo', data)
+        .then(response => {
+          console.log(response.data);
+        })
+        .catch(error => {
           console.error(error);
         });
     },

@@ -1,0 +1,12 @@
+fastapi==0.96.0
+uvicorn==0.22.0
+
+
+# dev
+pytest==7.3.1
+httpx==0.24.1
+aiomysql==0.2.0
+SQLAlchemy==2.0.16
+
+#formatter
+black==23.3.0
