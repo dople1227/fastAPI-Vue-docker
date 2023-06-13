@@ -16,7 +16,7 @@ app.add_middleware(
 class ModelName(str, Enum):
     """독스트링 스타일
 
-    첫줄에 요약된 설명을 하고 추가설명은 한줄 띄운 후 기입
+    첫줄에 요약된 설명을 작성하고 추가설명은 한줄 띄운 후 기입
     """
 
     alexnet = "alexnet"
