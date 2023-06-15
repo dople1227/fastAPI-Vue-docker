@@ -7,6 +7,13 @@ drinks = {
     "screwdriver": {"orange juice", "vodka"},
 }
 
+a = {1, 2}
+b = {2, 3}
+
+c = a & b
+d = a.intersection(b)
+
+
 # # 1.vodka가 포함된 음료만 추출
 # for name, contents in drinks.items():
 #     if "vodka" in contents:
@@ -23,7 +30,10 @@ drinks = {
 #     if "vodka" in contents and not contents & {"cream", "vermouth"}:
 #         print(name)
 
-a = {1, 2}
-b = {2, 3}
+bruss = drinks["black russian"]
+wruss = drinks["white russian"]
+bruss.update(["John", "Sam"])
+bruss.discard("Johns")
+bruss = bruss.union(wruss)
 
-print(a & b)
+print(bruss)

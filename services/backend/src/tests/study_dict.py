@@ -38,7 +38,8 @@ dict_list = {**dict_list, **dict_list2}
 # dict_list.update(dict_list3)
 # dict_list.pop("Sunday", "Saturday_")
 # copied_dict_list = copy.deepcopy(dict_list)
-copied_dict_list = dict_list.copy()
+# copied_dict_list = dict_list.copy()
+copied_dict_list = dict_list[:]
 copied_dict_list["week"][0] = "CHANGE Monday"
 
 print(dict_list)
