@@ -145,19 +145,13 @@
 #     return a + b
 # add_ints(3, 5)
 
-animal = "fruitbat"
+animal = "Global Default Value"
 
 
 def change_and_print_global():
-    print("inside change_and_print_global:", animal)
-    animal = "wombat"
-    print("after the change:", animal)
-
-
-def change_local():
-    animal = "wombat"
-    print("inside change_local:", animal, id(animal))
-
-
-change_and_print_global()
-# change_local()
+    """함수안에서 글로벌 변수 사용
+    모호함을 없에기위해 global로 명시 후 사용
+    """
+    global animal
+    animal = "Change Global Variable"
+    print("inside change_and_print_global():", animal, id(animal))
