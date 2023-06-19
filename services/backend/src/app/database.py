@@ -1,34 +1,34 @@
-from fastapi import FastAPI
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from .model import Base
 
-SQLALCHEMY_DATABASE_URL = "mysql+aiomysql://root:jhlee1324@localhost:3306/soron"
+# MySQL 연결 정보
+host = "localhost"
+# db_adapter = "asyncmy"
+db_adapter = "pymysql"
+port = 3306
+username = "root"
+password = "jhlee1324"
+database_name = "soron"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
-engine = None
-SessionLocal = None
+# aiomysql 드라이버를 사용하여 DATABASE_URL 구성
+DATABASE_URL = (
+    f"mysql+{db_adapter}://{username}:{password}@{host}:{port}/{database_name}"
+)
 
 
-async def init_db(app: FastAPI):
-    global engine, SessionLocal
+# create_async_engine() 함수로 엔진 생성
+db_engine = create_engine(DATABASE_URL)
+Base.metadata.create_all(bind=db_engine)
 
-    engine = await create_engine(
-        user="root",
-        password="jhlee1324",
-        host="localhost",
-        port=3306,
-        db="soron",
-        autocommit=False,
-        maxsize=20,
-    )
-    SessionLocal = sessionmaker(engine, expire_on_commit=False)
+# 세션 생성
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
 
-    async def close_db(app: FastAPI):
-        await engine.wait_closed()
 
-    app.add_event_handler("startup", init_db)
-    app.add_event_handler("shutdown", close_db)
+# 세션을 반환하는 함수
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

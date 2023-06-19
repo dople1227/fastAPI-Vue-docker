@@ -46,3 +46,10 @@ print(dict_list)
 
 # for key, value in copied_dict_list.items():
 #     print("key", key, "value", value)
+
+
+# list_keys=[]
+# list_values=[]
+# for key, value in dict_list2.items():
+#     list_keys.append(key)
+#     list_values.append(value)

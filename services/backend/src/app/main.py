@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from enum import Enum
-from .todo import todo_router
+from sqlalchemy.orm import Session
+from .model import ModelName, Zoo
+from .database import db_engine, get_db
+
+# from .todo import todo_router
+
 
 app = FastAPI()
 
@@ -14,20 +18,15 @@ app.add_middleware(
 )
 
 
-class ModelName(str, Enum):
-    """독스트링 스타일
-
-    첫줄에 요약된 설명을 작성하고 추가설명은 한줄 띄운 후 기입
-    """
-
-    alexnet = "alexnet"
-    resnet = "resnet"
-    lenet = "lenet"
-
-
-@app.get("/ping")
-def pong():
-    return {"message": "Ping Pong!"}
+@app.get("/dbtest")
+def test_db_connection(db: Session = Depends(get_db)):
+    try:
+        # 데이터베이스 연결 테스트 쿼리 실행
+        with db_engine.connect() as conn:
+            conn.execute(f"SELECT * FROM zoo")
+        return {"message": "Database connection successful"}
+    except Exception as e:
+        return {"message": f"Database connection error: {str(e)}"}
 
 
 @app.get("/")
@@ -55,4 +54,5 @@ async def get_model(model_name: ModelName):
 
     return {"model_name": model_name, "message": "Have some residuals"}
 
-app.include_router(todo_router)
+
+# app.include_router(todo_router)
