@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from .model import ModelName, Zoo
-from .database import db_engine, get_db
+from .db.models import ModelName, User
+from .db.session import db_engine, get_db
+from .db.crud import get_user
 
 # from .todo import todo_router
 
@@ -30,8 +31,13 @@ def test_db_connection(db: Session = Depends(get_db)):
 
 
 @app.get("/")
-def root():
-    return {"message": "Hello, World!"}
+def root(db: Session = Depends(get_db)):
+    return {"msg": "root"}
+
+
+@app.get("/user")
+def route_get_user(db: Session = Depends(get_db)):
+    get_user(get_db(), 1)
 
 
 @app.get("/users/me")
