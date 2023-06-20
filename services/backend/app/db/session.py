@@ -11,6 +11,7 @@ db_engine = create_engine(config.DATABASE_URI)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
 
 Base = declarative_base()
+Base.metadata.create_all(db_engine)
 
 
 # 세션을 반환하는 함수

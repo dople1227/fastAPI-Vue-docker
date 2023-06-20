@@ -36,7 +36,7 @@ def root(db: Session = Depends(get_db)):
 
 
 @app.get("/user")
-def route_get_user():
+def route_get_user(db: Session = Depends(get_db)):
     get_user(get_db(), 1)
 
 
