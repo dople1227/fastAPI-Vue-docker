@@ -10,7 +10,8 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "services.backend.app.main:app",
+                // "services.backend.app.main:app",
+                "services.backend.seminar.chapter1.main:app",
                 "--reload"
             ],
             "jinja": true,

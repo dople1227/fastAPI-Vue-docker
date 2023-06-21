@@ -1,43 +1,26 @@
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from .db.models import ModelName, User
-from .db.session import db_engine, get_db
-from .db.crud import get_user
-
-# from .todo import todo_router
-
+from fastapi import FastAPI, Depends, HTTPException
+from .db.database import SessionLocal, get_db
+from fastapi.routing import APIRouter
+from .db.models import Base, User
 
 app = FastAPI()
+user_router = APIRouter()
+Base.metadata.create_all(bind=SessionLocal().get_bind())
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://localhost:8081"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.get("/dbtest")
-def test_db_connection(db: Session = Depends(get_db)):
-    try:
-        # 데이터베이스 연결 테스트 쿼리 실행
-        with db_engine.connect() as conn:
-            conn.execute(f"SELECT * FROM zoo")
-        return {"message": "Database connection successful"}
-    except Exception as e:
-        return {"message": f"Database connection error: {str(e)}"}
+# @app.middleware("http")
+# async def db_session_middleware(request: Request, call_next):
+#     request.state.db = SessionLocal()
+#     response = await call_next(request)
+#     request.state.db.close()
+#     return response
 
 
-@app.get("/")
-def root(db: Session = Depends(get_db)):
-    return {"msg": "root"}
-
-
-@app.get("/user")
-def route_get_user(db: Session = Depends(get_db)):
-    get_user(get_db(), 1)
+@user_router.get("/user")
+def route_get_user(db=Depends(get_db)):
+    user = db.query(User).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @app.get("/users/me")
@@ -50,15 +33,15 @@ async def read_user(user_id: str):
     return {"user_id": user_id}
 
 
-@app.get("/models/{model_name}")
-async def get_model(model_name: ModelName):
-    if model_name is ModelName.alexnet:
-        return {"model_name": model_name, "message": "Deep Learning FTW!"}
+# @app.get("/models/{model_name}")
+# async def get_model(model_name: ModelName):
+#     if model_name is ModelName.alexnet:
+#         return {"model_name": model_name, "message": "Deep Learning FTW!"}
 
-    if model_name.value == "lenet":
-        return {"model_name": model_name, "message": "LeCNN all the images"}
+#     if model_name.value == "lenet":
+#         return {"model_name": model_name, "message": "LeCNN all the images"}
 
-    return {"model_name": model_name, "message": "Have some residuals"}
+#     return {"model_name": model_name, "message": "Have some residuals"}
 
 
-# app.include_router(todo_router)
+app.include_router(user_router)

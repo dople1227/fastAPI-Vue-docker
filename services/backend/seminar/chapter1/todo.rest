@@ -1,0 +1,25 @@
+POST http://127.0.0.1:8000/todo HTTP/1.1
+content-type: application/json
+{
+    "msg2": "sendrequest2"
+}
+
+###
+
+GET http://127.0.0.1:8000 HTTP/1.1
+
+###
+
+curl --request GET
+    --url http://127.0.0.1:8000/todo
+    
+
+###
+
+curl --request POST 
+    --url http://127.0.0.1:8000/todo 
+    --header 'content-type: application/json'
+    --data '{ 
+        "id": 1,
+        "item": "First Todo!"
+    }'
