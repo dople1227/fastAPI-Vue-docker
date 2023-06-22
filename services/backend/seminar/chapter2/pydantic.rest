@@ -1,0 +1,25 @@
+POST http://127.0.0.1:8000/todo 
+
+{
+    "id": 2,
+    "item": "Hello"
+}
+
+###
+GET http://127.0.0.1:8000/todo
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/todo 
+    --header 'content-type: application/json'
+    --data '{
+        "id": "1", 
+        "item": {
+            "item": "Netsted Models",
+            "status": "completed"
+        }}'
+
+###
+curl --request GET
+    --url http://127.0.0.1:8000/todo
+    
