@@ -1,0 +1,50 @@
+GET http://127.0.0.1:8000/todo/99
+ㅋ
+###
+POST http://127.0.0.1:8000/todo 
+content-Type: application/json; charset=UTF-8
+
+{
+    "id": 1,
+    "item": "Hello1"
+}
+
+###
+
+###
+PUT http://127.0.0.1:8000/todo/99
+content-Type: application/json; charset=UTF-8
+
+{
+    "item": "UPDATED22"
+}
+
+###
+DELETE http://127.0.0.1:8000/todo/99
+
+
+###
+curl --request GET
+    --url http://127.0.0.1:8000/todo
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/todo 
+    --header 'content-type: application/json'
+    --data '{
+        "id": 1,         
+        "item": "Hello!"
+    }'
+
+###
+curl --request PUT 
+    --url http://127.0.0.1:8000/todo/1
+    --header 'content-type: application/json'
+    --data '{
+        "item": "UPDATED Todo!"
+    }'
+    
+###
+curl --request DELETE 
+    --url http://127.0.0.1:8000/todo
+    
