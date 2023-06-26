@@ -1,39 +1,42 @@
-from fastapi import APIRouter, Path
-from .schemas import Todo, TodoItem
+from fastapi import APIRouter, HTTPException, status, Path
+from .schemas import Todo, TodoItem, TodoItems
 
 todo_router = APIRouter()
 todo_list = []
 
 
-@todo_router.post("/todo")
+@todo_router.get("/todo", response_model=TodoItems)
+async def get_todos() -> dict:
+    return {"todos": todo_list}
+
+
+@todo_router.post("/todo", status_code=201)
 async def add_todo(todo: Todo) -> dict:
     todo_list.append(todo)
     return {"message": "Todo added successfully"}
 
 
-@todo_router.get("/todo")
-async def get_todos() -> dict:
-    return {"todos": todo_list}
-
-
+# todo 한개 SELECT
 @todo_router.get("/todo/{todo_id}")
 async def get_single_todo(
     todo_id: int = Path(
         ...,
         title="Title of Path Parameter",
         description="Description of Path Parameter",
-        gt=0,
-        le=5,
     )
 ) -> dict:
     for todo in todo_list:
         if todo.id == todo_id:
             return {"todo": todo}
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Todo supplied ID doesn`t exist",
+        headers={"testHeader": "testHeader Message"},
+    )
 
-    return {"message": "Todo with supplied ID doesn`t exist."}
 
-
-@todo_router.put("/todo/{todo_id}")
+# todo 한개 UPDATE
+@todo_router.put("/todo/{todo_id}", status_code=201)
 async def update_todo(
     todo_data: TodoItem,
     todo_id: int = Path(..., title="The ID of the todo to be updated"),
@@ -42,10 +45,14 @@ async def update_todo(
         if todo.id == todo_id:
             todo.item = todo_data.item
             return {"message": "Todo updated successfully"}
-    return {"message": "Todo with supplied ID doesn`t exist."}
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Todo supplied ID doesn`t exist",
+        headers={"testHeader": "testHeader Message"},
+    )
 
 
-# Todo 한개 삭제
+# todo 한개 DELETE
 @todo_router.delete("/todo/{todo_id}")
 async def delete_single_todo(
     todo_id: int = Path(..., title="The ID of the todo to be deleted")
@@ -55,10 +62,14 @@ async def delete_single_todo(
         if todo.id == todo_id:
             todo_list.pop(index)
             return {"message": "Todo deleted successfully"}
-    return {"message": "Todo with supplied ID doesn`t exist"}
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Todo supplied ID doesn`t exist",
+        headers={"testHeader": "testHeader Message"},
+    )
 
 
-# 전체 Todo 삭제
+# 전체 todo DELETE
 @todo_router.delete("/todo")
 async def delete_all_todo() -> dict:
     todo_list.clear()
