@@ -6,6 +6,6 @@ port = 3306
 username = "root"
 password = "jhlee1324"
 database_name = "soron"
-DATABASE_URI = (
+DATABASE_URL = (
     f"mysql+{db_adapter}://{username}:{password}@{host}:{port}/{database_name}"
 )

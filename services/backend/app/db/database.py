@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from ..core import config
 
 # 엔진 생성 create_async_engine() 알아볼것
-db_engine = create_engine(config.DATABASE_URI)
+db_engine = create_engine(config.DATABASE_URL)
 # 세션 생성
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
 

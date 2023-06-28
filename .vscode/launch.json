@@ -11,7 +11,7 @@
             "module": "uvicorn",
             "args": [
                 // "services.backend.app.main:app",
-                "services.backend.seminar_part2.chapter2.main:app",
+                "services.backend.seminar.seminar_async.dbtest.main:app",
                 "--reload"
             ],
             "jinja": true,
