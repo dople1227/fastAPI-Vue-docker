@@ -1,0 +1,65 @@
+GET http://127.0.0.1:8000/todo/99
+ㅋ
+###
+POST http://127.0.0.1:8000/todo 
+content-Type: application/json; charset=UTF-8
+
+{
+    "id": 1,
+    "item": "Hello1"
+}
+
+###
+
+###
+PUT http://127.0.0.1:8000/todo/99
+content-Type: application/json; charset=UTF-8
+
+{
+    "item": "UPDATED22"
+}
+
+###
+DELETE http://127.0.0.1:8000/todo/99
+
+
+###
+curl --request GET
+    --url http://127.0.0.1:8000/event/
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/user/signup
+    --header 'content-type: application/json'
+    --data '{
+        "email": "jhlee@yescnc.co.kr",
+        "username": "jhlee",
+        "password": "pwd123!"
+    }'
+
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/event/new
+    --header 'content-type: application/json'
+    --data '{
+        "id": 2,
+        "title": "Event Title2",        
+        "image": "http://img.com/img2.png",
+        "description": "Description 2",
+        "tags": ["python", "fastapi", "book", "lunch"],
+        "location": "Google Meet"
+    }'    
+
+###
+curl --request PUT 
+    --url http://127.0.0.1:8000/todo/1
+    --header 'content-type: application/json'
+    --data '{
+        "item": "UPDATED Todo!"
+    }'
+    
+###
+curl --request DELETE 
+    --url http://127.0.0.1:8000/event/1
+    
