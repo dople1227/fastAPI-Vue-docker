@@ -1,0 +1,55 @@
+GET http://127.0.0.1:8000/todo/99
+ㅋ
+###
+POST http://127.0.0.1:8000/todo 
+content-Type: application/json; charset=UTF-8
+
+{
+    "id": 1,
+    "item": "Hello1"
+}
+
+###
+
+###
+PUT http://127.0.0.1:8000/event/edit/1
+content-Type: application/json; charset=UTF-8
+
+{
+    "title": "UPDATED TITLE11"
+}
+
+###
+DELETE http://127.0.0.1:8000/todo/99
+
+
+###
+curl --request GET
+    --url http://127.0.0.1:8000/event
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/event/new
+    --header 'content-type: application/json'
+    --data '{
+        "id": 1,
+        "title": "title 1",
+        "image": "image 1",
+        "description": "description 1",
+        "tags": ["python", "fastapi", "book", "launch"],
+        "location": "Google Meet"
+    }'
+
+###
+curl --request PUT 
+    --url http://127.0.0.1:8000/event/edit/1
+    --header 'accept: application/json'
+    --header 'content-type: application/json'   
+    --data '{
+        "title": "updated title 1"
+    }'
+    
+###
+curl --request DELETE 
+    --url http://127.0.0.1:8000/event/delete/1
+    
