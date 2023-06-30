@@ -20,17 +20,30 @@
 
 ###### /models/events.py
 ```python
-from pydantic import BaseModel
-from typing import List, Optional
-from sqlmodel import SQLModel, Field, Optional
+from sqlmodel import SQLModel, JSON, Field, Column
+from typing import Optional, List
+
 
 class Event(SQLModel, table=True):
-  id: Optional[int] = Field(default=None, primary_key=True)
-  title: str
-  image: str
-  description: str
-  location: str
-  tags: List[str]
+    id: int = Field(default=None, primary_key=True)
+    title: str
+    image: str
+    description: str
+    location: str
+    tags: List[str] = Field(sa_column=Column(JSON))
+
+    class Config:
+        arbitrary_types_allowed = True
+        schema_extra = {
+            "example": {
+                "title": "FastAPI Book",
+                "image": "http://limktomyimage.com/image.png",
+                "description": "this is description",
+                "location": "Google Meet",
+                "tags": ["python", "fastapi", "book", "launch"],
+            }
+        }
+
 ```
 
 #### 1.2 로우
@@ -47,7 +60,7 @@ with Session(engine) as session:
   session.add(new_event)
   session.commit()
 ```
-- 생소한 코드가 나왔다. 이제 세션을 알아보자.
+- 세션관련 생소한 코드가 나왔다. 이제 세션을 알아보자.
 
 #### 1.3 세션
 - 세션 객체는 코드와 데이터베이스 사이에서 이루어지는 처리를 관리하며 주로 특정 처리를 데이터베이스에 적용하기 위해 사용된다.
@@ -60,7 +73,7 @@ with Session(engine) as session:
 
 <br/>
 
-# 2. DATABASE 생성
+# 2. DATABASE 생성 및 Event model추가
 - SQLModel에서는 SQLAlchemy 엔진을 사용해서 데이터베이스를 연결
 - SQLAlchemy 엔진은 create_engine() 메서드를 사용해서 생성
 - create_engine() 메서드는 데이터베이스 URL을 인수로 사용
@@ -78,3 +91,71 @@ SQLModel.metadata.create_all(engine)
 
 - 이벤트플래너 애플리케이션에 데이터베이스를 연동해보자.
   
+#### 2.1 UPDATE처리의 바디유형으로 사용할 모델 추가
+
+###### /models/events.py
+```python
+class EventUpdate(SQLModel):
+    title: Optional[str]
+    image: Optional[str]
+    description: Optional[str]
+    tags: Optional[List[str]] 
+    location: Optional[str]
+                       
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "FastAPI Book Launch",
+                "image": "https://linktomyimage.com/image.png",
+                "description": "this is description",
+                "tags": ["python","fastapi","book" ,"lunch"],
+                "location": "Google Meet"
+            }
+        }
+```
+
+<br/>
+
+
+#### 2.2 데이터베이스 연결파일 작성
+
+###### /database/connection.py
+```python
+from sqlmodel import SQLModel, Session, create_engine
+from ..models.events import Event
+
+database_file = "planner.db"
+database_connection_string = f"sqlite:///{database_file}"
+connect_args = {"check_same_thread": False}
+engine_url = create_engine(
+    database_connection_string, echo=True, connect_args=connect_args
+)
+
+
+def conn():
+    SQLModel.metadata.create_all(engine_url)
+
+
+def get_session():
+    with Session(engine_url) as session:
+        yield session
+```
+<br/>
+
+
+#### 2.3 main 실행 시 데이터베이스 연결
+
+###### /database/main.py에 아래 코드 추가
+```python
+from database.connection import conn
+
+
+@app.on_event("startup")
+def on_startup():
+  conn()
+```
+###### 코드 작성 후 실행결과
+![Alt text](img/part4_ch1_image.png)
+
+- 데이터베이스 엔진 생성 시에 echo=True로 설정하면 위와같이 SQL명령이 출력된다.
+

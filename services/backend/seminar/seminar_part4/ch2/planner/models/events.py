@@ -7,8 +7,8 @@ class Event(SQLModel, table=True):
     title: str
     image: str
     description: str
-    location: str
     tags: List[str] = Field(sa_column=Column(JSON))
+    location: str
 
     class Config:
         arbitrary_types_allowed = True
@@ -27,7 +27,7 @@ class EventUpdate(SQLModel):
     title: Optional[str]
     image: Optional[str]
     description: Optional[str]
-    tags: Optional[str]
+    tags: Optional[List[str]]
     location: Optional[str]
 
     class Config:
