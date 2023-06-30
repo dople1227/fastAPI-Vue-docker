@@ -1,5 +1,5 @@
 GET http://127.0.0.1:8000/todo/99
-ㅋ
+
 ###
 POST http://127.0.0.1:8000/todo 
 content-Type: application/json; charset=UTF-8
@@ -8,8 +8,6 @@ content-Type: application/json; charset=UTF-8
     "id": 1,
     "item": "Hello1"
 }
-
-###
 
 ###
 PUT http://127.0.0.1:8000/event/edit/1
