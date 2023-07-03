@@ -11,9 +11,6 @@
 - 클래스 정의는 table이라는 설정 변수를 가지며 이 변수를 통해 해당 클래스가 SQLModel 테이블 이라는 것을 인식한다.
 - 모델 클래스 안에 정의된 변수는 따로 지정하지 않으면 기본 필드로 설정된다. (사용 시 기본값을 반드시 제공해줘야하며 그렇지 않을 시 validationError발생)
 
-> - 책에선 /models/에 pydantic 스키마와 데이터베이스 연동에 사용되는 model을 함께 기입했지만 여기선 분리하여 작성할 것이다.
-> - 이벤트플래너에 /models 라는 폴더를 만들고 /models/users.py, /models/events.py 두 파일을 생성한다.
-
 <br/>
 
 - Event테이블 모델 정의
@@ -122,7 +119,7 @@ class EventUpdate(SQLModel):
 ###### /database/connection.py
 ```python
 from sqlmodel import SQLModel, Session, create_engine
-from ..models.events import Event
+
 
 database_file = "planner.db"
 database_connection_string = f"sqlite:///{database_file}"

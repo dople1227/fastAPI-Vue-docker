@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from ..schemas.users import User, UserSignIn
+from ..models.users import User, UserSignIn
 
 user_router = APIRouter(
     tags=["User"],

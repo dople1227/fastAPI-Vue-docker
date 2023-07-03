@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, HTTPException, status, Depends, Request
 
-# from ..schemas.events import Event
+
 from typing import List
 from ..models.events import Event, EventUpdate
 from ..database.connection import get_session
