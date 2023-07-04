@@ -16,7 +16,7 @@
             routes/
                 events.py
                 users.py
-            schemas/
+            models/
                 events.py
                 users.py
 
@@ -25,23 +25,9 @@
   - routes 폴더 
     - events.py : 이벤트 생성,변경, 삭제 등의 처리를 위한 라우팅
     - users.py : 사용자 등록 및 로그인 처리를 위한 라우팅
-  - schemas 폴더
-    - events.py : 이벤트 처리용 스키마를 정의
-    - users.py : 사용자 처리용 스키마를 정의
-
-> 💡 model대신 schema라는 단어 사용
-> 
-> 책에선 schema가 아닌 model이란 단어를 사용하며 폴더명도 models라고 작성하여 파일들을 분류하고 있다.  
-> 
-> 잘못된 단어는 아니지만 이후 database를 사용하게되면 테이블을 다루게 될텐데 그때도  
-> model이란 단어를 사용하게된다. 
-> 
-> pydantic 검증에 사용되는 모듈과 database 테이블을 관리하는 모듈은 분리되어 
-> 관리하는게 좋은 설계라고 생각하는데 둘 다 model이라고 칭하는건 혼란을 야기시킬 수 있다.
-> 
-> 따라서 pydantic 검증에 사용되는 클래스, 폴더명 등엔 schema라는 용어를, 데이터베이스 연동에 사용되는 클래스 및 폴더명 등엔 model이란 용어를 사용하기로 한다.
-> 
-> (이미 많은 fastapi개발자들이 그런식의 구조화를 사용하고 있는 것으로 보인다.)
+  - models 폴더
+    - events.py : 이벤트 처리용 모델을 정의
+    - users.py : 사용자 처리용 모델을 정의
 
 <br/>
 
@@ -53,18 +39,18 @@
 
 <br/>
 
-##### 1.3.1 스키마 구현
-- 우선 이벤트 스키마와 사용자 스키마를 정의하자.
+##### 1.3.1 모델 구현
+- 우선 이벤트 모델과 사용자 모델을 정의하자.
 - 각 사용자는 여러개의 이벤트를 저장할 수 있어야 한다. (사용자:이벤트 -> 1:N 관계)
   
-  ![Alt text](img/part3_ch1_image.png)
+  ![Alt text](img/part3_ch1_image23.png)
 
 <br/>
 
-- 이벤트 스키마(Event)를 schemas 폴더의 events.py에 정의한다.
+- 이벤트 모델(Event)을 models 폴더의 events.py에 정의한다.
 - Event 클래스 안에 Config 서브 클래스를 추가한다. 문서화할 때 샘플 데이터를 보여주기 위한 용도.
 
-###### /schemas/events.py
+###### /models/events.py
 ```python
 from pydantic import BaseModel
 from typing import List
@@ -92,7 +78,7 @@ class Event(BaseModel):
 <br/>
 <br/>
 
-- 마찬가지로 사용자 스키마와 Config를 정의한다.
+- 마찬가지로 사용자 모델과 Config를 정의한다.
 
 ###### /models/user.py
 ```python
@@ -103,6 +89,7 @@ from ..schemas.events import Event
 class User(BaseModel):
   id: int
   email: EmailStr
+  username: str
   password: str
   events: Optional[List[Event]]
 
@@ -120,9 +107,9 @@ class User(BaseModel):
 <br/>
 <br/>
 
-- 사용자 로그인 스키마(UserSignIn)를 만든다.
+- 사용자 로그인 모델(UserSignIn)을 만든다.
 
-###### /schemas/users.py
+###### /models/users.py
 ```python
 class UserSignIn(BaseModel):
   email: EmailStr
@@ -254,7 +241,7 @@ case 3. 잘못된 이메일 입력
 ###### /routes/events.py
 ```python
 from fastapi import APIRouter, Body, HTTPException, status
-from ..schemas.events import Event
+from ..models.events import Event
 from typing import List
 
 event_router = APIRouter(tags=["Events"])

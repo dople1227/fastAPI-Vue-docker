@@ -231,7 +231,7 @@ async def init_db():
 - .env 파일을 사용하기 위해 dotenv 라이브러리 설치
     > (venv)$ pip install pydantic[dotenv]
 
-- .env파일 경로 인식안될 시
+- .env파일 경로 인식이 안된다면 아래 코드 추가
     ###### /database/connection.py
     ```python
     from pathlib import Path
@@ -244,16 +244,18 @@ async def init_db():
 <br/>
 
 #### 5.6 이벤트 요청 및 응답 확인
-|                               | 요청                                              | 응답                     |
-| ----------------------------- | ------------------------------------------------- | ------------------------ |
-| 생성 &nbsp;&nbsp;&nbsp;&nbsp; | ![Alt text](image-1.png)                          | ![Alt text](image-2.png) |
-| 전체조회 / 조회               | ![Alt text](image-3.png) ![Alt text](image-4.png) | ![Alt text](image.png)   |
-| 수정                          | ![Alt text](image-5.png)                          | ![Alt text](image-6.png) |
-| 삭제                          | ![Alt text](image-7.png)                          | ![Alt text](image-8.png) |
+|                               | 요청                                                                        | 응답                                  |
+| ----------------------------- | --------------------------------------------------------------------------- | ------------------------------------- |
+| 생성 &nbsp;&nbsp;&nbsp;&nbsp; | ![Alt text](img/part4_ch4_image1.png)                                       | ![Alt text](img/part4_ch4_image2.png) |
+| 전체조회 / 조회               | ![Alt text](img/part4_ch4_image3.png) ![Alt text](img/part4_ch4_image4.png) | ![Alt text](img/part4_ch4_image.png)  |
+| 수정                          | ![Alt text](img/part4_ch4_image5.png)                                       | ![Alt text](img/part4_ch4_image6.png) |
+| 삭제                          | ![Alt text](img/part4_ch4_image7.png)                                       | ![Alt text](img/part4_ch4_image8.png) |
 
 
 
 #### 5.7 사용자 요청 및 응답 확인
-|      | 요청 | 응답 |
-| ---- | ---- | ---- |
-| 생성 |      |      |
+|                      | 요청                                   | 응답                                   |
+| -------------------- | -------------------------------------- | -------------------------------------- |
+| 생성                 | ![Alt text](img/part4_ch4_image11.png) | ![Alt text](img/part4_ch4_image12.png) |
+| 중복생성 시도할 경우 | ![Alt text](img/part4_ch4_image11.png) | ![Alt text](img/part4_ch4_image13.png) |
+| 로그인               | ![Alt text](img/part4_ch4_image9.png)  | ![Alt text](img/part4_ch4_image10.png) |

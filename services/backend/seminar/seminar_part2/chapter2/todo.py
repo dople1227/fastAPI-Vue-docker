@@ -31,7 +31,7 @@ async def get_single_todo(
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="Todo supplied ID doesn`t exist",
-        headers={"testHeader": "testHeader Message"},
+        headers={"testHeader": "testHeader Message", "secondHeader": "second Msg"},
     )
 
 

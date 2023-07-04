@@ -25,11 +25,11 @@ DELETE http://127.0.0.1:8000/todo/99
 
 ###
 curl --request GET
-    --url http://127.0.0.1:8000/todo
+    --url http://127.0.0.1:8000/todo/99
 
 ###
 curl --request POST 
-    --url http://127.0.0.1:8000/todo 
+    --url http://127.0.0.1:8000/todo
     --header 'content-type: application/json'
     --data '{
         "id": 1,         
