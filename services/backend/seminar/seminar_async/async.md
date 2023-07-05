@@ -241,6 +241,15 @@ def application(environ, start_response):
   - Django 3.0 이상: 장고는 버전3.0부터 ASGI를 지원한다. 장고 애플리케이션 내의 비동기 코드 지원은 3.1에 추가됐다.실행 속도 측면에서 아쉬운 측면이 있는 프레임워크임을 감안하면 비동기의 활용으로 더 높은 성능을 얻을 수 있다.
 
 - ASGI를 사용할 땐 async함수와 최대한 비동기 친화적인 라이브러리를 사용하는 것이 좋다.
+  
+- FastAPI에선 ASGI 통신을 위해 Starlette 라이브러리를 사용하고 있고 Starlette.applications 모듈에 해당 기능이 구현되어져 있다. 아래는 ASGI를 사용하는 Starlette 라이브러리의 코드 중 일부이다.
+  
+- ASGI서버 (uvicorn)로부터 전달된 scope, receive, send 파라미터를 받아서 처리하는코드
+
+###### starlette/applications.py
+![Alt text](img/async_image13.png)
+
+  
 
 <br/>
 <br/>

@@ -3,12 +3,15 @@ curl --request GET
 
 ###
 curl --request POST 
-    --url http://127.0.0.1:8000/user/signup
+    --url http://127.0.0.1:8000/event/new
     --header 'content-type: application/json'
     --data '{
-        "email": "jhlee@yescnc.co.kr",
-        "username": "jhlee",
-        "password": "pwd123!"
+        "id": 1,
+        "title": "Event Title1",
+        "image": "http://img.com/img1.png",
+        "description": "Description 1",
+        "tags": ["python", "fastapi", "book", "lunch"],
+        "location": "Google Meet"
     }'
 
 ###

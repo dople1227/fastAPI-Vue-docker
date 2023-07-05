@@ -13,6 +13,7 @@ class Event(BaseModel):
     class Config:
         schema_extra = {
             "example": {
+                "id": 1,
                 "title": "FastAPI Book Launch",
                 "image": "https://linktomyimage.com/image.png",
                 "description": "We will be discussing the contents of the FastAPI book in this event.",

@@ -4,6 +4,7 @@ from .events import Event
 
 
 class User(BaseModel):
+    id: int
     email: EmailStr
     username: str
     password: str
@@ -12,6 +13,7 @@ class User(BaseModel):
     class Config:
         schema_extra = {
             "example": {
+                "id": 1,
                 "email": "fastapi@packt.com",
                 "username": "John",
                 "password": "pwd123!",
