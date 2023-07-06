@@ -6,7 +6,7 @@ POST http://127.0.0.1:8000/test
 }
 
 ###
-GET http://127.0.0.1:8000/test
+GET http://127.0.0.1:8000/
 
 ###
 curl --request POST 
@@ -19,5 +19,5 @@ curl --request POST
 
 ###
 curl --request GET
-    --url http://127.0.0.1:8000/todo/1
+    --url http://127.0.0.1:8000
     
