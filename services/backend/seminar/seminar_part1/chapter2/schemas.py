@@ -8,4 +8,4 @@ class Item(BaseModel):
 
 class Todo(BaseModel):
     id: int
-    item: Item
+    item: str

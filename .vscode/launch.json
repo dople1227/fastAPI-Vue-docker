@@ -11,8 +11,10 @@
             "module": "uvicorn",
             "args": [
                 // "services.backend.app.main:app",
-                "services.backend.seminar.seminar_part1.chapter2.main:app",
-                "--reload"
+                "services.backend.seminar.seminar_part1.chapter1.main:app",
+                "--reload",
+                "--host",
+                "0.0.0.0"
             ],
             "jinja": true,
             "justMyCode": true

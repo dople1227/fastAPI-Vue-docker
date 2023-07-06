@@ -1,8 +1,8 @@
 POST http://127.0.0.1:8000/todo 
 
 {
-    "id": "1",
-    "item": "First Todo!"
+    "id": 1,
+    "item": 11
 }
 
 ###
