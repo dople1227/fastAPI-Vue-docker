@@ -1,0 +1,50 @@
+GET http://127.0.0.1:8000/todo/99
+
+###
+POST http://127.0.0.1:8000/todo 
+content-Type: application/json; charset=UTF-8
+
+{
+    "id": 1,
+    "item": "Hello1"
+}
+
+###
+PUT http://127.0.0.1:8000/event/64a258517d60e990212150ed  
+content-Type: application/json; charset=UTF-8
+Accept: application/json
+
+{
+    "location": "UPDATED TITLE11"
+}
+
+###
+DELETE http://127.0.0.1:8000/todo/99
+
+
+###
+curl --request GET
+    --url http://127.0.0.1:8000/event
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/user/signin
+    --header 'content-type: application/json'
+    --data '{        
+        "email": "jhleeXXX@yescnc.co.kr",
+        "password": "password1!",
+        "events": []
+    }'
+
+###
+curl --request PUT 
+    --url http://127.0.0.1:8000/event/64a258517d60e990212150ed    
+    --header 'content-type: application/json'   
+    --data '{
+        "location": "Hybrid"
+    }'
+    
+###
+curl --request DELETE 
+    --url http://127.0.0.1:8000/event/64a258517d60e990212150ed
+    

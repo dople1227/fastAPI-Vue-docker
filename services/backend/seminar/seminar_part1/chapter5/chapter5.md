@@ -2,7 +2,7 @@
 #### 5.1 UPDATE
 <br/>
 
-##### 5.1.1 UPDATE 라우트의 요청 바디용 스키마 추가
+##### 5.1.1 UPDATE 라우트의 요청 바디 검증용 스키마 추가
 ##### schemas.py
 ![Alt text](img/ch5_image1.png)
 <br/>

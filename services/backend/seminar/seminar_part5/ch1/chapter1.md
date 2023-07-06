@@ -8,7 +8,7 @@
   | 허가(authorization)  | 개체가 특정 처리를 할 수 있도록 권한을 주는 것 |
 
 - Part5 의 목표  
-  - hash를 사용해 패스워드를 보호하고 FastAPI 애플리케이션에 인증 계층으 추가할 수 있다. 
+  - hash를 사용해 패스워드를 보호하고 FastAPI 애플리케이션에 인증 계층을 추가할 수 있다. 
   - 허가되지 않은 사용자로부터 라우트를 보호할 수 있다.
 
 <br/>
@@ -45,7 +45,7 @@ async def sign_user_up(user: User) -> dict:
     user_exist = await User.find_one(User.email == user.email)
 ```
 여기서 User 클래스가 의존 라이브러리이며 이를 sign_user_up()함수에 주입한다.
-User를 사용자 함수의 인수로 주입해 User 클래스의 속성을 쉽게 추출할 수 있다.
+User를 인수로 주입해 User 클래스의 속성을 쉽게 추출할 수 있다.
 
 <br/>
 
@@ -53,11 +53,21 @@ User를 사용자 함수의 인수로 주입해 User 클래스의 속성을 쉽�
 - FastAPI에서 의존 라이브러리는 함수 또는 클래스로 정의된다.
 - 생성된 의존 라이브러리는 기본값과 메서드에 접근할 수 있으므로 함수 내에서 이러한 객체를 상속하지 않아도 된다.
 - 반복된 코드 작성을 줄여주므로 인증과 허가처럼 반복적인 구현이 필요한 경우에 큰 도움이 됨  
-
   
-다음과 같이 의존 라이브러리를 정의할 수 있다.
+다음과 같이 의존 라이브러리를 정의하고 사용할 수 있다.
+
+###### 의존 라이브러리 정의
 ```python
 async def get_user(token: str):
     user = decode_token(token)
     return user
+```
+
+###### 의존 라이브러리 사용
+```python
+from fastapi import Depends
+
+@router.get("/user/me")
+async get_user_details(user: User = Depends(get_user)):
+  return user
 ```

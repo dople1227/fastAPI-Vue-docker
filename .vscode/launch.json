@@ -11,7 +11,7 @@
             "module": "uvicorn",
             "args": [
                 // "services.backend.app.main:app",
-                "services.backend.seminar.seminar_part3.ch1.planner.main:app",
+                "services.backend.seminar.seminar_part1.chapter2.main:app",
                 "--reload"
             ],
             "jinja": true,

@@ -1,0 +1,23 @@
+POST http://127.0.0.1:8000/test
+
+{
+    "id": 3,
+    "item": "Hello"
+}
+
+###
+GET http://127.0.0.1:8000/test
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/todo 
+    --header 'content-type: application/json'
+    --data '{
+        "id": 3,         
+        "item": "Third Todo!"
+        }'
+
+###
+curl --request GET
+    --url http://127.0.0.1:8000/todo/1
+    
