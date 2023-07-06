@@ -22,8 +22,8 @@
 ###### JSonResponse
 ![Alt text](image-4.png)
 
-    - 결론.  
-    - 라우팅 요청에 사용되는 대부분의 기능엔 response_class라는 파라미터가 존재하고
+    - 결론
+    라우팅 요청에 사용되는 대부분의 기능엔 response_class라는 파라미터가 존재하고
     이 파라미터는 기본값으로 JSon으로 직렬화하는 역할을 한다.
     따라서 response_class 파라미터의 값을 일부러 다른 타입으로 지정하여 사용하지 않았다면 기본값으로 설정된 JSonResponse형식으로 데이터를 처리하게 된다.
  
