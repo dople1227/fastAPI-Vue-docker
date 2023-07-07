@@ -1,261 +1,192 @@
-# 5. CRUD 처리
-- connection.py 파일을 수정한다. 라이브러리 및 Database 클래스를 아래와 같이 추가한다.
+# 4. 몽고DB 설정
+- FastAPI와 몽고DB를 연결해주기 위해 beanie를 사용
+> (venv) $ pip install beanie==1.13.1
+#### 4.1 문서
+- 몽고DB는 NoSQL(Not Only SQL)데이터베이스로 비관계형 데이터베이스
+- NoSQL 데이터베이스에서는 데이터 저장을 위해 문서를 사용한다. pydantic 스키마와 동일한 방식으로 정의되며 유일한 차이점은 beanie가 제공하는 Document 클래스를 사용한다는 점이다.
+
+    ```python
+    from beanie import Document
+
+    class Event(Document):
+        name: str
+        location: str
+
+        class Settings:
+            name = "events"
+    ```
+- 여기서 Settings 서브클래스는 몽고DB 데이터베이스 내에 설정한 이름으로 컬렉션을 생성한다.
+- 문서 생성방법을 알았으니 CRUD 처리를 위한 메서드를 살펴보자.
+
+<br/>
+
+##### 4.1.1 CRUD 처리를 위해 beanie가 제공하는 메서드
+  - insert(), create(): 문서 인스턴스에 의해 호출되며 데이터베이스 내에 새로운 레코드를 생성한다. 단일 데이터는 insert_one()메서드를 사용해 추가하고 여러 개의 데이터는 insert_many()메서드를 사용해 추가한다.
+    ```python
+    event1 = Event(name="Packt office launch", location="Hybrid")
+    event2 = Event(name="Hanbit office launch", location="Hybrid")
+    await event1.create()
+    await event2.create()
+    await Event.insert_many([event1, event2])
+    ```
+
+<br/>
+
+- find(), get(): find()메서드는 문서 목록에서 인수로 지정한 문서를 찾는다.  
+  get()메서드는 지정한 ID와 일치하는 단일 문서를 반환한다.find_one()메서드는
+  다음과 같이 지정한 조건과 일치하는 단일 문서를 반환한다.
+    ```python
+    # ID와 일치하는 단일 문서를 반환한다.
+    event = await Event.get("74478287284ff")
+    # 일치하는 아이템의 리스트를 반환한다.
+    event = await Event.find(Event.location == "Hybrid").to_list()
+    # 단일 이벤트를 반환한다.
+    event = await.find_one(Event.location == "Hybrid")
+    ```
+
+<br/>
+
+- save(), update(), upsert(): save()메서드는 데이터를 신규 문서로 저장할 때 사용된다. update()는 기존 문서를 변경할 때 사용되고, upsert()는 조건에 부합하는 문서가 있다면 update(), 없으면 save()로 사용된다 (insert+update의 합성어)
+    ```python
+    event = await Event.get("74478287284ff")
+    update_query = {"$set": {"location": "virtual"}}
+    await event.update(update_query)
+    ```
+
+<br/>
+
+- delete(): 데이터베이스에서 문서를 삭제한다. 
+    ```python
+    event = await Event.get("74478287284ff")
+    await event.delete()
+    ```
+
+<br/>
+
+#### 4.2 데이터베이스 초기화
+- 이벤트 플래너 애플리케이션에 몽고DB를 설정하고 문서를 정의하자.
+- 아래 순서로 진행한다.
+
+<br/>
+
+##### 4.2.1 데이터베이스 연결
+
 ###### /database/connection.py
 ```python
+from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient
+from typing import Optional
+from pydantic import BaseSettings
+from ..models.users import User
+from ..models.events import Event
+
+
+class Settings(BaseSettings):
+    DATABASE_URL: Optional[str] = None
+
+    async def initialize_database(self):
+        client = AsyncIOMotorClient(self.DATABASE_URL)
+        await init_beanie(
+            database=client.get_default_database(), document_models=[Event, User]
+        )
+
+    class Config:
+        env_file = ".env"
+
+```
+
+<br/>
+
+##### 4.2.2 이벤트 모델
+
+###### /models/events.py
+```python
+from beanie import Document
+from typing import Optional, List
 from pydantic import BaseModel
-from typing import Any, List
-from beanie import PydanticObjectId
 
 
-class Database:
-    def __init__(self, model):
-        self.model = model
+class Event(Document):
+    title: str
+    image: str
+    description: str
+    tags: List[str]
+    location: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "FastAPI Book Launch",
+                "image": "https://linktomyimage.com/image.png",
+                "description": "This is description",
+                "tags": ["python", "fastapi", "book", "launch"],
+                "location": "Google Meet",
+            }
+        }
+
+    class Settings:
+        name = "events"
+
+
+class EventUpdate(BaseModel):
+    title: Optional[str]
+    image: Optional[str]
+    description: Optional[str]
+    tags: Optional[List[str]]
+    location: Optional[str]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "FastAPI Book Launch",
+                "image": "https://linktomyimage.com/image.png",
+                "description": "This is Description",
+                "tags": ["python", "fastapi", "book", "launch"],
+                "location": "Google Meet",
+            }
+        }
 ```
 
 <br/>
 
-#### 5.1 생성 처리
-- Database클래스 안에 save() 메서드를 추가한다. 이 메서드는 레코드 하나를 데이터베이스 컬렉션에 추가한다.
-    ##### /database/connection.py
-    ```python
-    # 레코드 생성
-    async def save(self, document) -> None:
-        await document.create()
-        return
-    ```
+##### 4.2.4 사용자 모델
 
-<br/>
-
-#### 5.2 조회 처리
-- 단일 레코드를 불러오거나 전체 레코드를 불러오는 메서드 작성
-    ##### /database/connection.py
-    ```python
-    # 단일 레코드 조회
-    async def get(self, id: PydanticObjectId) -> Any:
-        doc = await self.model.get(id)
-        if doc:
-            return doc
-        return False
-    
-    # 전체 레코드 조회
-    async def get_all(self) -> List[Any]:
-        docs = await self.model.find_all().to_list()
-        return docs
-    ```
-
-<br/>
-
-#### 5.3 변경 처리
-- 기존 레코드 변경
-- 하나의 ID와 pydantic 스키마를 인수로받는다.
-- 스키마에는 클라이언트가 보낸 PUT요청에 의해 변경된 필드가 저장된다.
-    ##### /database/connection.py
-    ```python
-    # 레코드 변경
-    async def update(self, id: PydanticObjectId, body: BaseModel) -> Any:
-        doc_id = id
-        des_body = body.dict()
-        des_body = {k:v for k,v in des_body in des_body.items() if v is not None}
-        update_query = {"$set": {
-            field: value for field, value in des_body.items()
-        }}
-
-        doc = await self.get(doc_id)
-        if not doc:
-            return False
-        await doc.update(update_query)
-        return doc
-    ```
-
-<br/>
-
-#### 5.4 삭제 처리
-- 기존 레코드 삭제
-- 해당 레코드가 존재하는지 확인 후 삭제
-
-    ##### /database/connection.py
-    ```python
-    # 레코드 삭제
-    async def delete(self, id: PydanticObjectId) -> bool:
-        doc = await self.get(id)
-        if not doc:
-            return False
-        await doc.delete()
-        return True
-    ```
-
-<br/>
-
-#### 5.5 route변경
-- 기존 route를 MongoDB를 사용하도록 변경
-##### 5.5.1 이벤트 route 변경
-###### /routes/events.py
+###### /models/users.py
 ```python
-from beanie import PydanticObjectId
-from fastapi import APIRouter, Body, HTTPException, status
-from ..database.connection import Database
-from ..models.events import Event, EventUpdate
-from typing import List
-
-event_database = Database(Event)
-event_router = APIRouter(tags=["Events"])
-events = []
+from typing import Optional, List
+from beanie import Document
+from pydantic import BaseModel, EmailStr
+from models.events import Event
 
 
-# 모든 이벤트 조회
-@event_router.get("/", response_model=List[Event])
-async def retrieve_all_events() -> List[Event]:
-    events = await event_database.get_all()
-    return events
+class User(Document):
+    email: EmailStr
+    password: str
+    events: Optional[List[Event]]
+
+    class Settings:
+        name = "users"
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "email": "jhlee@yescnc.co.kr",
+                "username": "juno",
+                "events": [],
+            }
+        }
 
 
-# 특정 이벤트 조회
-@event_router.get("/{id}", response_model=Event)
-async def retrieve_event(id: PydanticObjectId) -> Event:
-    event = await event_database.get(id)
-    if not event:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event with supplied ID does not exist",
-        )
-    return event
-
-
-# 이벤트 생성
-@event_router.post("/new")
-async def create_event(body: Event = Body(...)) -> dict:
-    await event_database.save(body)
-    return {"message": "Event created successfully"}
-
-
-# 이벤트 삭제
-@event_router.delete("/{id}")
-async def delete_event(id: PydanticObjectId) -> dict:
-    event = await event_database.delete(id)
-    if not event:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event with supplied ID does not exist",
-        )
-    return {
-        "message": "event deleted successfully"
-    }
-
-
-# 이벤트 수정
-@event_router.put("/{id}}", response_model=Event)
-async def update_event(id: PydanticObjectId, body: EventUpdate) -> Event:
-    updated_event = await event_database.update(id, body)
-    if not update_event:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event with supplied ID does not exist"
-        )
-    return updated_event
+class UserSignIn(BaseModel):
+    email: EmailStr
+    password: str
 ```
 
 <br/>
 
-##### 5.5.2 사용자 route 변경
-###### /routes/users.py
-```python
-from fastapi import APIRouter, HTTPException, status
-from ..database.connection import Database
-from ..models.users import User, UserSignIn
+##### 4.2.6 환경파일 (.env)생성
 
-user_router = APIRouter(
-    tags=["User"],
-)
-users = {}
-user_database = Database(User)
-
-
-# 사용자 등록
-@user_router.post("/signup")
-async def sign_new_user(user: User) -> dict:
-    user_exist = await User.find_one(User.email == user.email)
-    if user_exist:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User with email provided exists already",
-        )
-    await user_database.save(user)
-    return {"message": "User successfully registered"}
-
-
-# 사용자 로그인
-@user_router.post("/signin")
-async def sign_user_in(user: UserSignIn) -> dict:
-    user_exist = await User.find_one(User.email == user.email)
-
-    if not user_exist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist"
-        )
-
-    if user_exist.password == user.password:
-        return {"message": "User signed in successfully"}
-
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN, detail="Wrong credentials passed"
-    )
+###### /.env
 ```
-
-<br/>
-
-##### 5.5.3 main 변경
-###### /main.py
-```python
-from fastapi import FastAPI
-from .database.connection import Settings
-from .routes.users import user_router
-from .routes.events import event_router
-
-
-app = FastAPI()
-settings = Settings()
-
-# 라우트 등록
-app.include_router(user_router, prefix="/user")
-app.include_router(event_router, prefix="/event")
-
-
-@app.on_event("startup")
-async def init_db():
-    await settings.initialize_database()
+DATABASE_URL = mongodb://localhost:27017/planner
 ```
-
-<br/>
-
-##### 5.5.4 기타 설정
-- .env 파일을 사용하기 위해 dotenv 라이브러리 설치
-    > (venv)$ pip install pydantic[dotenv]
-
-- .env파일 경로 인식이 안된다면 아래 코드 추가
-    ###### /database/connection.py
-    ```python
-    from pathlib import Path
-    from dotenv import load_dotenv
-
-    env_path = Path(__file__).resolve().parent.parent / ".env"
-    load_dotenv(env_path)
-    ```
-
-<br/>
-
-#### 5.6 이벤트 요청 및 응답 확인
-|                               | 요청                                                                        | 응답                                  |
-| ----------------------------- | --------------------------------------------------------------------------- | ------------------------------------- |
-| 생성 &nbsp;&nbsp;&nbsp;&nbsp; | ![Alt text](img/part4_ch4_image1.png)                                       | ![Alt text](img/part4_ch4_image2.png) |
-| 전체조회 / 조회               | ![Alt text](img/part4_ch4_image3.png) ![Alt text](img/part4_ch4_image4.png) | ![Alt text](img/part4_ch4_image.png)  |
-| 수정                          | ![Alt text](img/part4_ch4_image5.png)                                       | ![Alt text](img/part4_ch4_image6.png) |
-| 삭제                          | ![Alt text](img/part4_ch4_image7.png)                                       | ![Alt text](img/part4_ch4_image8.png) |
-
-
-
-#### 5.7 사용자 요청 및 응답 확인
-|                      | 요청                                   | 응답                                   |
-| -------------------- | -------------------------------------- | -------------------------------------- |
-| 생성                 | ![Alt text](img/part4_ch4_image11.png) | ![Alt text](img/part4_ch4_image12.png) |
-| 중복생성 시도할 경우 | ![Alt text](img/part4_ch4_image11.png) | ![Alt text](img/part4_ch4_image13.png) |
-| 로그인               | ![Alt text](img/part4_ch4_image9.png)  | ![Alt text](img/part4_ch4_image10.png) |

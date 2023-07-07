@@ -1,148 +1,104 @@
-# 3. 이벤트 라우트 변경
-#### 3.1 이벤트 생성
-- 기존 작성한 routes/events.py의 이벤트생성을 db상에 반영하도록 변경
+# 2. DATABASE 생성 및 Event model추가
+- SQLModel에서는 SQLAlchemy 엔진을 사용하여 데이터베이스를 연결한다.
+- SQLAlchemy 엔진은 create_engine() 메서드를 사용해서 생성한다.
+- create_engine() 메서드는 데이터베이스 URL을 인수로 사용한다.
+  - sqlite:///database.db 또는 sqlite:///database.sqlite와 같은 형식    
+- create_engine() 메서드는 연결에 필요한 설정이 준비된 Engine 객체만을 생성하며
+  실제 서버에 연결하거나 데이터베이스를 생성하는 작업은 수행하지 않는다.
+- 데이터베이스 연결 및 생성은 create_all(engine)메서드에서 수행한다.
 
-###### routes/events.py
 ```python
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from ..models.events import Event, EventUpdate
-from database.connection import get_session
+database_file = "database.db"
+engine = create_engine(database_file, echo=True)
+SQLModel.metadata.create_all(engine)
+```
 
-# 이벤트 생성
-@event_router.post("/new")
-async def create_event(new_event: Event, session=Depends(get_session)) -> dict:
-    session.add(new_event)
-    session.commit()
-    session.refresh(new_event)
+> 💡 create_engine()의 echo  
+> echo를 true로 설정하면 실행되는 SQL명령을 콘솔에 출력한다.
 
-    return {"message": "Event created successfully."}
+- create_all() 메서드는 데이터베이스뿐만 아니라 테이블도 생성한다. 테이블 생성을 위해서는 데이터베이스 연결시 반드시 테이블 파일이 import되어야 한다.
+
+<br/>
+
+#### 2.1 이벤트플래너 애플리케이션에 데이터베이스 연동
+  
+##### 2.1.1 UPDATE처리용 검증 모델 추가
+
+###### /models/events.py
+```python
+class EventUpdate(SQLModel):
+    title: Optional[str]
+    image: Optional[str]
+    description: Optional[str]
+    tags: Optional[List[str]] 
+    location: Optional[str]
+                       
+    class Config:
+        schema_extra = {
+            "example": {
+                "title": "FastAPI Book Launch",
+                "image": "https://linktomyimage.com/image.png",
+                "description": "this is description",
+                "tags": ["python","fastapi","book" ,"lunch"],
+                "location": "Google Meet"
+            }
+        }
 ```
 
 <br/>
 
-###### routes/events.py
-| 요청                                  | 응답                                 |
-| ------------------------------------- | ------------------------------------ |
-| ![Alt text](img/part4_ch2_image1.png) | ![Alt text](img/part4_ch2_image.png) |
 
+#### 2.1.2 데이터베이스 연결파일 작성
+
+###### /database/connection.py
+```python
+from sqlmodel import SQLModel, Session, create_engine
+
+
+database_file = "planner.db"
+database_connection_string = f"sqlite:///{database_file}"
+connect_args = {"check_same_thread": False}
+engine_url = create_engine(
+    database_connection_string, echo=True, connect_args=connect_args
+)
+
+
+def conn():
+    SQLModel.metadata.create_all(engine_url)
+
+
+def get_session():
+    with Session(engine_url) as session:
+        yield session
+```
 <br/>
 
-#### 3.2 이벤트 조회
-- 기존 작성한 routes/events.py의 이벤트조회를 db를 반영하도록 변경
+#### 2.1.3 main 실행 시 데이터베이스 연결
 
-###### routes/events.py
+###### /database/main.py
 ```python
-from sqlmodel import select
-
-# 모든 이벤트 조회
-@event_router.get("/", response_model=List[Event])
-async def retrieve_all_events(session=Depends(get_session)) -> List[Event]:
-    statement = select(Event)
-    events = session.exec(statement).all()
-    return events
+from fastapi import FastAPI
+from .routes.users import user_router
+from .routes.events import event_router
+from .database.connection import conn
 
 
-# 특정 이벤트 조회
-@event_router.get("/{id}", response_model=Event)
-async def retrieve_event(id: int, session=Depends(get_session)) -> Event:
-    event = session.get(Event, id)
-    if event:
-        return event
+app = FastAPI()
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Event with supplied ID does not exist",
-    )
+
+@app.on_event("startup")
+def on_startup():
+    conn()
+
+
+app.include_router(user_router, prefix="/user")
+app.include_router(event_router, prefix="/event")
 ```
 
 <br/>
 
-###### routes/events.py
-| 요청                                  | 응답                                  |
-| ------------------------------------- | ------------------------------------- |
-| ![Alt text](img/part4_ch2_image2.png) | ![Alt text](img/part4_ch2_image3.png) |
-| ![Alt text](img/part4_ch2_image4.png) | ![Alt text](img/part4_ch2_image5.png) |
+###### 코드 작성 후 실행결과
+![Alt text](img/part4_ch2_image.png)
 
-<br/>
+- 데이터베이스 엔진 생성 시에 echo=True로 설정하면 위와같이 SQL명령이 출력된다.
 
-#### 3.3 이벤트 변경
-- 기존 작성한 routes/events.py에 이벤트변경 라우트를 추가
-- 이벤트를 변경한 후 변경한 데이터를 반환하는 함수
-
-###### routes/events.py
-```python
-from sqlmodel import select
-
-# 이벤트 변경
-@event_router.put("/edit/{id}", response_model=Depends(get_session))
-async def update_event(id: int, new_data: EventUpdate, session=Depends(get_session)) -> Event:
-    event = session.get(Event, id)
-    if event:
-        event_data = new_data.dict(exclude_unset=True)
-        for key, value in event_data.items():
-            setattr(event, key, value)
-        session.add(event)
-        session.commit()
-        session.refresh(event)
-
-        return events
-    raise HTTPException(
-        status_code = status.HTTP_404_NOT_FOUND,
-        detail="Event with suppliedID does not exist"
-    )
-```
-
-> - exclude_unset=True  
->   dict()나 json() 메서드에서 사용되는 매개변수로 True가 할당되면 모델 인스턴스에서
->   값이 설정되지 않은 필드를 제외시킨 후 dict()형식 또는 json()형식으로 반환
-> 
-> - setattr()  
->   객체의 속성값을 동적으로 설정하는 함수
->   setattr(object, attribute, value)
->     - object: 속성을 설정할 객체
->     - attribute: 설정할 속성의 이름
->     - value: 설정할 속성의 값
-
-<br/>
-
-###### routes/events.py
-| 요청                                  | 응답                                  |
-| ------------------------------------- | ------------------------------------- |
-| ![Alt text](img/part4_ch2_image6.png) | ![Alt text](img/part4_ch2_image7.png) |
-
-<br/>
-
-#### 3.4 이벤트 삭제
-- 기존 작성한 routes/events.py의 이벤트삭제를 db를 반영하도록 변경
-
-###### routes/events.py
-```python
-# 이벤트 삭제
-@event_router.delete("/delete/{id}")
-async def delete_event(id: int, session=Depends(get_session)) -> dict:
-    event = session.get(Event, id)
-    if event:
-        session.delete(event)
-        session.commit()
-        return {"message": "Event deleted successfully."}
-
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Event with supplied ID does not exist",
-    )
-```
-
-<br/>
-
-###### routes/events.py
-| 요청                                  | 응답                                  |
-| ------------------------------------- | ------------------------------------- |
-| ![Alt text](img/part4_ch2_image8.png) | ![Alt text](img/part4_ch2_image9.png) |
-
-<br/>
-
-- 삭제되었는지 전체 이벤트 조회로 확인
-###### routes/events.py
-| 요청                                   | 응답                                   |
-| -------------------------------------- | -------------------------------------- |
-| ![Alt text](img/part4_ch2_image10.png) | ![Alt text](img/part4_ch2_image11.png) |

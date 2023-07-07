@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Union
 
 
 class Item(BaseModel):
@@ -7,5 +8,5 @@ class Item(BaseModel):
 
 
 class Todo(BaseModel):
-    id: int
+    id: Union[int, bool]
     item: str

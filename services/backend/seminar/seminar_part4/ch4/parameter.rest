@@ -10,12 +10,11 @@ content-Type: application/json; charset=UTF-8
 }
 
 ###
-PUT http://127.0.0.1:8000/event/64a258517d60e990212150ed  
+PUT http://127.0.0.1:8000/event/edit/1
 content-Type: application/json; charset=UTF-8
-Accept: application/json
 
 {
-    "location": "UPDATED TITLE11"
+    "title": "UPDATED TITLE11"
 }
 
 ###
@@ -28,23 +27,27 @@ curl --request GET
 
 ###
 curl --request POST 
-    --url http://127.0.0.1:8000/user/signin
+    --url http://127.0.0.1:8000/event/new
     --header 'content-type: application/json'
-    --data '{        
-        "email": "jhleeXXX@yescnc.co.kr",
-        "password": "password1!",
-        "events": []
+    --data '{
+        "id": 1,
+        "title": "title 1",
+        "image": "image 1",
+        "description": "description 1",
+        "tags": ["python", "fastapi", "book", "launch"],
+        "location": "Google Meet"
     }'
 
 ###
 curl --request PUT 
-    --url http://127.0.0.1:8000/event/64a258517d60e990212150ed    
+    --url http://127.0.0.1:8000/event/edit/1
+    --header 'accept: application/json'
     --header 'content-type: application/json'   
     --data '{
-        "location": "Hybrid"
+        "title": "updated title 1"
     }'
     
 ###
 curl --request DELETE 
-    --url http://127.0.0.1:8000/event/64a258517d60e990212150ed
+    --url http://127.0.0.1:8000/event/delete/1
     

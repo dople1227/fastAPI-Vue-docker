@@ -1,192 +1,148 @@
-# 4. 몽고DB 설정
-- FastAPI와 몽고DB를 연결해주기 위해 beanie를 사용
-> (venv) $ pip install beanie==1.13.1
-#### 4.1 문서
-- 몽고DB는 NoSQL(Not Only SQL)데이터베이스로 비관계형 데이터베이스
-- NoSQL 데이터베이스에서는 데이터 저장을 위해 문서를 사용한다. pydantic 스키마와 동일한 방식으로 정의되며 유일한 차이점은 beanie가 제공하는 Document 클래스를 사용한다는 점이다.
+# 3. 이벤트 라우트 변경
+#### 3.1 이벤트 생성
+- 기존 작성한 routes/events.py의 이벤트생성을 db상에 반영하도록 변경
 
-    ```python
-    from beanie import Document
-
-    class Event(Document):
-        name: str
-        location: str
-
-        class Settings:
-            name = "events"
-    ```
-- 여기서 Settings 서브클래스는 몽고DB 데이터베이스 내에 설정한 이름으로 컬렉션을 생성한다.
-- 문서 생성방법을 알았으니 CRUD 처리를 위한 메서드를 살펴보자.
-
-<br/>
-
-##### 4.1.1 CRUD 처리를 위해 beanie가 제공하는 메서드
-  - insert(), create(): 문서 인스턴스에 의해 호출되며 데이터베이스 내에 새로운 레코드를 생성한다. 단일 데이터는 insert_one()메서드를 사용해 추가하고 여러 개의 데이터는 insert_many()메서드를 사용해 추가한다.
-    ```python
-    event1 = Event(name="Packt office launch", location="Hybrid")
-    event2 = Event(name="Hanbit office launch", location="Hybrid")
-    await event1.create()
-    await event2.create()
-    await Event.insert_many([event1, event2])
-    ```
-
-<br/>
-
-- find(), get(): find()메서드는 문서 목록에서 인수로 지정한 문서를 찾는다.  
-  get()메서드는 지정한 ID와 일치하는 단일 문서를 반환한다.find_one()메서드는
-  다음과 같이 지정한 조건과 일치하는 단일 문서를 반환한다.
-    ```python
-    # ID와 일치하는 단일 문서를 반환한다.
-    event = await Event.get("74478287284ff")
-    # 일치하는 아이템의 리스트를 반환한다.
-    event = await Event.find(Event.location == "Hybrid").to_list()
-    # 단일 이벤트를 반환한다.
-    event = await.find_one(Event.location == "Hybrid")
-    ```
-
-<br/>
-
-- save(), update(), upsert(): save()메서드는 데이터를 신규 문서로 저장할 때 사용된다. update()는 기존 문서를 변경할 때 사용되고, upsert()는 조건에 부합하는 문서가 있다면 update(), 없으면 save()로 사용된다 (insert+update의 합성어)
-    ```python
-    event = await Event.get("74478287284ff")
-    update_query = {"$set": {"location": "virtual"}}
-    await event.update(update_query)
-    ```
-
-<br/>
-
-- delete(): 데이터베이스에서 문서를 삭제한다. 
-    ```python
-    event = await Event.get("74478287284ff")
-    await event.delete()
-    ```
-
-<br/>
-
-#### 4.2 데이터베이스 초기화
-- 이벤트 플래너 애플리케이션에 몽고DB를 설정하고 문서를 정의하자.
-- 아래 순서로 진행한다.
-
-<br/>
-
-##### 4.2.1 데이터베이스 연결
-
-###### /database/connection.py
+###### routes/events.py
 ```python
-from beanie import init_beanie
-from motor.motor_asyncio import AsyncIOMotorClient
-from typing import Optional
-from pydantic import BaseSettings
-from ..models.users import User
-from ..models.events import Event
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from ..models.events import Event, EventUpdate
+from database.connection import get_session
 
+# 이벤트 생성
+@event_router.post("/new")
+async def create_event(new_event: Event, session=Depends(get_session)) -> dict:
+    session.add(new_event)
+    session.commit()
+    session.refresh(new_event)
 
-class Settings(BaseSettings):
-    DATABASE_URL: Optional[str] = None
-
-    async def initialize_database(self):
-        client = AsyncIOMotorClient(self.DATABASE_URL)
-        await init_beanie(
-            database=client.get_default_database(), document_models=[Event, User]
-        )
-
-    class Config:
-        env_file = ".env"
-
+    return {"message": "Event created successfully."}
 ```
 
 <br/>
 
-##### 4.2.2 이벤트 모델
+###### routes/events.py
+| 요청                                  | 응답                                 |
+| ------------------------------------- | ------------------------------------ |
+| ![Alt text](img/part4_ch3_image1.png) | ![Alt text](img/part4_ch3_image.png) |
 
-###### /models/events.py
+<br/>
+
+#### 3.2 이벤트 조회
+- 기존 작성한 routes/events.py의 이벤트조회를 db를 반영하도록 변경
+
+###### routes/events.py
 ```python
-from beanie import Document
-from typing import Optional, List
-from pydantic import BaseModel
+from sqlmodel import select
+
+# 모든 이벤트 조회
+@event_router.get("/", response_model=List[Event])
+async def retrieve_all_events(session=Depends(get_session)) -> List[Event]:
+    statement = select(Event)
+    events = session.exec(statement).all()
+    return events
 
 
-class Event(Document):
-    title: str
-    image: str
-    description: str
-    tags: List[str]
-    location: str
+# 특정 이벤트 조회
+@event_router.get("/{id}", response_model=Event)
+async def retrieve_event(id: int, session=Depends(get_session)) -> Event:
+    event = session.get(Event, id)
+    if event:
+        return event
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "title": "FastAPI Book Launch",
-                "image": "https://linktomyimage.com/image.png",
-                "description": "This is description",
-                "tags": ["python", "fastapi", "book", "launch"],
-                "location": "Google Meet",
-            }
-        }
-
-    class Settings:
-        name = "events"
-
-
-class EventUpdate(BaseModel):
-    title: Optional[str]
-    image: Optional[str]
-    description: Optional[str]
-    tags: Optional[List[str]]
-    location: Optional[str]
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "title": "FastAPI Book Launch",
-                "image": "https://linktomyimage.com/image.png",
-                "description": "This is Description",
-                "tags": ["python", "fastapi", "book", "launch"],
-                "location": "Google Meet",
-            }
-        }
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Event with supplied ID does not exist",
+    )
 ```
 
 <br/>
 
-##### 4.2.4 사용자 모델
+###### routes/events.py
+| 요청                                  | 응답                                  |
+| ------------------------------------- | ------------------------------------- |
+| ![Alt text](img/part4_ch3_image2.png) | ![Alt text](img/part4_ch3_image3.png) |
+| ![Alt text](img/part4_ch3_image4.png) | ![Alt text](img/part4_ch3_image5.png) |
 
-###### /models/users.py
+<br/>
+
+#### 3.3 이벤트 변경
+- 기존 작성한 routes/events.py에 이벤트변경 라우트를 추가
+- 이벤트를 변경한 후 변경한 데이터를 반환하는 함수
+
+###### routes/events.py
 ```python
-from typing import Optional, List
-from beanie import Document
-from pydantic import BaseModel, EmailStr
-from models.events import Event
+from sqlmodel import select
 
+# 이벤트 변경
+@event_router.put("/edit/{id}", response_model=Depends(get_session))
+async def update_event(id: int, new_data: EventUpdate, session=Depends(get_session)) -> Event:
+    event = session.get(Event, id)
+    if event:
+        event_data = new_data.dict(exclude_unset=True)
+        for key, value in event_data.items():
+            setattr(event, key, value)
+        session.add(event)
+        session.commit()
+        session.refresh(event)
 
-class User(Document):
-    email: EmailStr
-    password: str
-    events: Optional[List[Event]]
+        return events
+    raise HTTPException(
+        status_code = status.HTTP_404_NOT_FOUND,
+        detail="Event with suppliedID does not exist"
+    )
+```
 
-    class Settings:
-        name = "users"
+> - exclude_unset=True  
+>   dict()나 json() 메서드에서 사용되는 매개변수로 True가 할당되면 모델 인스턴스에서
+>   값이 설정되지 않은 필드를 제외시킨 후 dict()형식 또는 json()형식으로 반환
+> 
+> - setattr()  
+>   객체의 속성값을 동적으로 설정하는 함수
+>   setattr(object, attribute, value)
+>     - object: 속성을 설정할 객체
+>     - attribute: 설정할 속성의 이름
+>     - value: 설정할 속성의 값
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "email": "jhlee@yescnc.co.kr",
-                "username": "juno",
-                "events": [],
-            }
-        }
+<br/>
 
+###### routes/events.py
+| 요청                                  | 응답                                  |
+| ------------------------------------- | ------------------------------------- |
+| ![Alt text](img/part4_ch3_image6.png) | ![Alt text](img/part4_ch3_image7.png) |
 
-class UserSignIn(BaseModel):
-    email: EmailStr
-    password: str
+<br/>
+
+#### 3.4 이벤트 삭제
+- 기존 작성한 routes/events.py의 이벤트삭제를 db를 반영하도록 변경
+
+###### routes/events.py
+```python
+# 이벤트 삭제
+@event_router.delete("/delete/{id}")
+async def delete_event(id: int, session=Depends(get_session)) -> dict:
+    event = session.get(Event, id)
+    if event:
+        session.delete(event)
+        session.commit()
+        return {"message": "Event deleted successfully."}
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Event with supplied ID does not exist",
+    )
 ```
 
 <br/>
 
-##### 4.2.6 환경파일 (.env)생성
+###### routes/events.py
+| 요청                                  | 응답                                  |
+| ------------------------------------- | ------------------------------------- |
+| ![Alt text](img/part4_ch3_image8.png) | ![Alt text](img/part4_ch3_image9.png) |
 
-###### /.env
-```
-DATABASE_URL = mongodb://localhost:27017/planner
-```
+<br/>
+
+- 삭제되었는지 전체 이벤트 조회로 확인
+###### routes/events.py
+| 요청                                   | 응답                                   |
+| -------------------------------------- | -------------------------------------- |
+| ![Alt text](img/part4_ch3_image10.png) | ![Alt text](img/part4_ch3_image11.png) |
