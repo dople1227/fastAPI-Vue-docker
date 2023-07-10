@@ -1,14 +1,11 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from ..auth.hash_password import HashPassword
-from ..database.connection import get_session
 from ..models.users import User, UserSignIn
+from ..database.connection import get_session
 from sqlmodel import select
-
 
 user_router = APIRouter(
     tags=["User"],
 )
-hash_password = HashPassword()
 
 
 # 사용자 등록
@@ -26,8 +23,6 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
         )
 
     # 등록된 사용자가 아니면 INSERT
-    hashed_password = hash_password.create_hash(new_user.password)
-    new_user.password = hashed_password
     session.add(new_user)
     session.commit()
     session.refresh(new_user)

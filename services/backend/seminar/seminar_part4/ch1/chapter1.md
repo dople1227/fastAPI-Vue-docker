@@ -45,6 +45,13 @@ class Event(SQLModel, table=True):
 
 <br/>
 
+> 💡 id의 자동증가값 다루기  
+> id는 PK이기 때문에 DB상에서 NULL이 될 수 없다.
+> 그럼에도 default=None으로 선언한 이유는 자동증가값은 DB를 참조하기전 파이썬코드상에서 id를 설정하지 않기 때문이고 이게 default=None으로 선언하는 유일한 이유이다.
+> https://sqlmodel.tiangolo.com/tutorial/automatic-id-none-refresh/#automatic-ids-none-defaults-and-refreshing-data
+
+<br/>
+
 > 💡 arbitrary_types_allowd  
 > 파이썬의 JSON인코더인 json.JSONEncoder 클래스의 속성.  
 > 기본적으로 JSONEncoder는 직렬화 할 수 있는 데이터 유형에 제한을 둔다.  

@@ -30,11 +30,31 @@ curl --request POST
     --url http://127.0.0.1:8000/event/new
     --header 'content-type: application/json'
     --data '{
-        "title": "title 1",
-        "image": "image 1",
-        "description": "description 1",
-        "tags": ["python", "fastapi", "book", "launch"],
-        "location": "Google Meet"
+        "title": "title 2",
+        "image": "image 2",
+        "description": "description 2",
+        "location": "location 2",
+        "tags": ["tag 2_1","tag 2_2","tag 2_3"]
+    }'
+
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/user/signup
+    --header 'content-type: application/json'
+    --data '{
+        "email": "NotEmailType",
+        "username": "username 2",
+        "password": "password1!"
+    }'
+
+###
+curl --request POST 
+    --url http://127.0.0.1:8000/user/signin
+    --header 'content-type: application/json'
+    --data '{
+        "email": "email1@yescnc.co.kr",        
+        "password": "wrongpassword!"
     }'
 
 ###
@@ -48,5 +68,5 @@ curl --request PUT
     
 ###
 curl --request DELETE 
-    --url http://127.0.0.1:8000/event/1
+    --url http://127.0.0.1:8000/event/2
     

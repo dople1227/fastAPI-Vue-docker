@@ -32,7 +32,8 @@ curl --request POST
     --header 'content-type: application/json'
     --data '{        
         "email": "jhlee@yescnc.co.kr",
-        "password": "password1!",
+        "username": "Juno",
+        "password": "password1!",        
         "event": []
     }'
 

@@ -12,10 +12,10 @@
 
 <br/>
 
-#### 1.1 FastAPI의 인증 방식
+#### 1.1 FastAPI의 주요 인증 방식
 - 기본 HTTP 인증
-  - 사용자 인증 정보(일반적으로 ID/PW)를 Authorization HTTP 헤더를 사용해 전송하는 방식
-  - Basic값을 포함하는 WWW-Authenticate 헤더와 인증 요청을 처리한 리소스를 나타내는 영역(realm) 매개변수가 존재한다.
+  - 사용자 인증 정보(일반적으로 ID/PW)를 HTTP 요청 헤더에 인코딩하여 전송하는 간단한방식
+  - HTTPBasic클래스를 사용하여 구현 가능
 
 <br/>
 
@@ -32,6 +32,7 @@
   - 가장 많이 사용되는 토큰은 JWT이며 사용자ID와 토큰 만료 기간으로  
     구성된 딕셔너리 형식이 일반적
   - Part 5에서는 bearer 토큰 인증을 다룬다.
+
 <br/>
 
 #### 1.1 의존성 주입
@@ -40,11 +41,11 @@
 
 ```python
 @user_router.post("/signup")
-async def sign_user_up(user: User) -> dict:
-    user_exist = await User.find_one(User.email == user.email)
+async def sign_new_user(new_user: User) -> dict:
+    select_user_exist = select(User).where(User.email == new_user.email)
 ```
-여기서 User 클래스가 의존 라이브러리이며 이를 sign_user_up()함수에 주입한다.
-User를 인수로 주입해 User 클래스의 속성을 쉽게 추출할 수 있다.
+여기서 User 클래스가 의존 라이브러리이며 이를 sign_new_user()함수에 주입한다.
+User를 사용자함수의 인수로 주입해 User객체의 인스턴스인 new_user를 생성하였으며 이를 통해 User 클래스의 속성을 쉽게 추출할 수 있다.
 
 <br/>
 

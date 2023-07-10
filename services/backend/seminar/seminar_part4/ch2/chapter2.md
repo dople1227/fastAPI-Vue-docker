@@ -4,8 +4,8 @@
 - create_engine() 메서드는 데이터베이스 URL을 인수로 사용한다.
   - sqlite:///database.db 또는 sqlite:///database.sqlite와 같은 형식    
 - create_engine() 메서드는 연결에 필요한 설정이 준비된 Engine 객체만을 생성하며
-  실제 서버에 연결하거나 데이터베이스를 생성하는 작업은 수행하지 않는다.
-- 데이터베이스 연결 및 생성은 create_all(engine)메서드에서 수행한다.
+  데이터베이스를 생성하는 작업은 수행하지 않는다.
+- 데이터베이스 생성은 create_all(engine)메서드에서 수행한다.
 
 ```python
 database_file = "database.db"
@@ -71,6 +71,7 @@ def get_session():
     with Session(engine_url) as session:
         yield session
 ```
+
 <br/>
 
 #### 2.1.3 main 실행 시 데이터베이스 연결

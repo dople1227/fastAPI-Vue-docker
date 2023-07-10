@@ -74,7 +74,7 @@ async def retrieve_event(id: int, session=Depends(get_session)) -> Event:
 from sqlmodel import select
 
 # 이벤트 변경
-@event_router.put("/edit/{id}", response_model=Depends(get_session))
+@event_router.put("/{id}", response_model=Depends(get_session))
 async def update_event(id: int, new_data: EventUpdate, session=Depends(get_session)) -> Event:
     event = session.get(Event, id)
     if event:
@@ -118,7 +118,7 @@ async def update_event(id: int, new_data: EventUpdate, session=Depends(get_sessi
 ###### routes/events.py
 ```python
 # 이벤트 삭제
-@event_router.delete("/delete/{id}")
+@event_router.delete("/{id}")
 async def delete_event(id: int, session=Depends(get_session)) -> dict:
     event = session.get(Event, id)
     if event:

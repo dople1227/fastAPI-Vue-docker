@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from .routes.users import user_router
 from .routes.events import event_router
-from .database.connection import conn, Settings
+import uvicorn
+from .database.connection import conn
 
 
 app = FastAPI()
-# settings = Settings()
 
 
 @app.on_event("startup")
