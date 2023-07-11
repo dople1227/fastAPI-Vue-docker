@@ -102,7 +102,7 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
 <br/>
 <br/>
 
-#### 3. 액세스 토큰 생성과 검증
+#### 2.3 액세스 토큰 생성과 검증
 - JWT를 구현하면 애플리케이션의 보안을 한 단계 더 강화할 수 있다.
 - 
 > 💡 토큰이란?  
@@ -120,12 +120,12 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
 
 <br/>
 
-##### 3.1 JWT인코딩, 디코딩용 jose 라이브러리 설치
+##### 2.3.1 JWT인코딩, 디코딩용 jose 라이브러리 설치
 > pip install python-jose[cryptography] python-multipart
 
 <br/>
 
-##### 3.2 SECRET_KEY 작성 및 사용
+##### 2.3.2 SECRET_KEY 작성 및 사용
 
 ###### .env
 ```
@@ -150,7 +150,7 @@ class Settings(BaseSettings):
 
 <br/>
 
-##### 3.3 jwt_handler파일 작성
+##### 2.3.3 jwt_handler파일 작성
 
 ###### /auth/jwt_handler.py
 ```python
@@ -194,3 +194,25 @@ def verify_access_token(token: str):
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
         )
 ```
+
+#### 2.4 사용자 인증
+- JWT 생성 및 디코딩하는 컴포넌트, 패스워드 해싱 및 비교 컴포넌트를 구현했으니 이벤트 라우트에 주입할 의존 라이브러리를 만든다. 
+
+```python
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from auth.jwt_handler import verify_access_token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/signin")
+
+
+async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Sign in for access"
+        )
+
+    decoded_token = verify_access_token(token)
+    return decoded_token["user"]
+```
+

@@ -121,8 +121,7 @@ class UserSignIn(BaseModel):
     schema_extra = {
       "example": {
         "email": "jhlee@yescnc.co.kr",
-        "password": "pwd123!",
-        "events": [],
+        "password": "pwd123!"
       }
     }
 ```

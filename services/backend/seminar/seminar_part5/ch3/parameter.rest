@@ -28,13 +28,21 @@ curl --request GET
 
 ###
 curl --request POST 
-    --url http://127.0.0.1:8000/user/signup
+    --url http://127.0.0.1:8000/user/signin
     --header 'content-type: application/json'
     --data '{        
         "email": "jhlee@yescnc.co.kr",
-        "password": "password1!",
-        "event": []
+        "username": "soronprfbs",
+        "password": "password1!"
     }'
+
+###
+curl -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      -request POST 
+    --url http://127.0.0.1:8000/user/signin
+    --header 'content-type: application/x-www-form-urlencoded'
+    --header 'accept: application/json'
+    --data 'grant_type=&username=jhlee%40yescnc.co.kr&password=exemplary&scope=&client_id=&client_secret='
+
 
 ###
 curl --request PUT 

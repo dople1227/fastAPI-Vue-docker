@@ -1,87 +1,12 @@
-# 2. OAuth2와 JWT를 사용한 애플리케이션 보안
+# 3. 이벤트플래너 애플리케이션에 인증모델 적용
 
-###### 인증 흐름
-![Alt text](img/diagram1.png)
-
-#### 2.1 인증 기능 구조화
-- 이벤트플래너 애플리케이션에 인증 기능을 추가하기 위해 폴더 및 파일추가
-
-      planner/
-          auth/
-            jwt_handler.py
-            authenticate.py
-            hash_password.py
-  - jwt_handler.py : JWT문자열을 인코딩 / 디코딩
-  - authenticate.py : authenticate 의존 라이브러리가 포함되며 인증 및 권한을 위해 라우트에 주입된다.
-  - hash_password.py : 패스워드를 암호화하는 함수가 포함된다. 계정을 등록하거나 로그인 시 패스워드 비교에 사용됨
-
-#### 2.2 패스워드 해싱
-- 데이터베이스 연결에서 사용자 패스워드를 일반텍스트로 저장했었는데 bcrypt를 사용해 암호화 해보자.
-
-> 💡 bcrypt란?  
-> 
->  bcrypt는 비밀번호를 해싱하는데 사용하는 함수이다.  
->  해싱이란 입력으로 받은 데이터를 고정된 길이의 해시 값으로 변환하는 알고리즘을 말한다.
-
-<br/>
-
-##### 2.2.1 passlib 라이브러리 설치
-> (venv)$ pip install passlib[bcrypt]
-
-<br/>
-
-##### 2.2.2 패스워드를 해싱하는 함수 작성
-
-###### /auth/hash_password.py
-```python
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-class HashPassword:
-    def create_hash(self, password: str):
-        return pwd_context.hash(password)
-
-    def verify_hash(self, plain_password: str, hashed_password: str):
-        return pwd_context.verify(plain_password, hashed_password)
-```
-  - create_hash() : 문자열을 해싱한 값을 반환
-  - verify_hash() : 일반 텍스트 패스워드와 해싱한 패스워드를 인수로 받아 두 값이 일치하는지 비교한다. 일치 여부에 따라 boolean값을 반환
-  
-<br/>
-
-##### 2.2.3 패스워드값을 해싱한 값으로 저장하도록 사용자등록 함수 변경
+#### 3.1 로그인 라우트 변경
 
 ###### /routes/users.py
 ```python
-from ..auth.hash_password import HashPassword #added
-from ..database.connection import Database 
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from ..auth.jwt_handler import create_access_token
 
-
-user_database = Database(User)
-hash_password = HashPassword() #added
-
-# 사용자 등록
-@user_router.post("/signup")
-async def sign_new_user(user: User) -> dict:
-    user_exist = await User.find_one(User.email == user.email)
-    if user_exist:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User with email provided exists already",
-        )
-    hashed_password = hash_password.create_hash(user.password) #added
-    user.password = hashed_password #added
-    await user_database.save(user)
-    return {"message": "User successfully registered"}
+async def sign_user_in(user: OAuth2Pass)
 ```
-
-##### 2.2.4 해싱된 패스워드값으로 DB에 저장되는지 테스트
-
-###### 사용자등록 실행 및 결과 확인
-| 구분            | 요청                                  | 결과                                  |
-| --------------- | ------------------------------------- | ------------------------------------- |
-| API             | ![Alt text](img/part5_ch2_image1.png) | ![Alt text](img/part5_ch2_image3.png) |
-| MongoShell      |                                       | ![Alt text](img/part5_ch2_image2.png) |
-| MongoDB Compass |                                       | ![Alt text](img/part5_ch2_image.png)  |

@@ -72,6 +72,18 @@ def get_session():
         yield session
 ```
 
+> 💡 파이썬의 컨텍스트 매니저  
+> 컨텍스트 매니저는 파이썬에서 제공하는 프로토콜 중 하나로 with문과 함께 사용되는 객체를 의미한다. 위 코드에서 Session객체가 컨텍스트 매니저이다.  
+> 
+> 컨텍스트 매니저는 __enter__와 __exit__메서드를 구현하여 with문의 진입시점과 종료 시점에 원하는 동작을 수행할 수 있도록 도와준다.  
+> 
+> Session을 컨텍스트 매니저로 사용하면 with 블록을 벗어날 때 __exit__메서드에서 세션종료 처리를 해주기때문에 따로 해당부분을 구현할 필요가 없다.
+
+##### Session의 __exit__코드
+###### /sqlalchemy/orm/session.py 
+![Alt text](img/part4_ch2_image2.png)
+![Alt text](img/part4_ch2_image1.png)
+
 <br/>
 
 #### 2.1.3 main 실행 시 데이터베이스 연결

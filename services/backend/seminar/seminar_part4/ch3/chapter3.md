@@ -74,7 +74,7 @@ async def retrieve_event(id: int, session=Depends(get_session)) -> Event:
 from sqlmodel import select
 
 # 이벤트 변경
-@event_router.put("/{id}", response_model=Depends(get_session))
+@event_router.put("/{id}", response_model=Event)
 async def update_event(id: int, new_data: EventUpdate, session=Depends(get_session)) -> Event:
     event = session.get(Event, id)
     if event:
@@ -85,7 +85,7 @@ async def update_event(id: int, new_data: EventUpdate, session=Depends(get_sessi
         session.commit()
         session.refresh(event)
 
-        return events
+        return event
     raise HTTPException(
         status_code = status.HTTP_404_NOT_FOUND,
         detail="Event with suppliedID does not exist"
