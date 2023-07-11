@@ -10,7 +10,7 @@ from typing import Optional, List
 from .events import Event
 
 
-class User(SQLModel, table=True):   # BaseModel대신 SQLModel을 상속
+class User(SQLModel, table=True):   # BaseModel대신 SQLModel
     id: int = Field(default=None, primary_key=True)
     email: EmailStr
     username: str
