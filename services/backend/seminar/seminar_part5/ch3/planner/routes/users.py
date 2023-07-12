@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlmodel import select
+
 from ..auth.jwt_handler import create_access_token
 from ..auth.hash_password import HashPassword
 from ..database.connection import get_session
 from ..models.users import User, TokenResponse
-from sqlmodel import select
 
 
 user_router = APIRouter(
@@ -13,14 +14,16 @@ user_router = APIRouter(
 hash_password = HashPassword()
 
 
-# 사용자 등록
 @user_router.post("/signup")
 async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
+    """사용자 등록"""
+
     # 등록된 사용자인지 체크
     select_user_exist = select(User).where(User.email == new_user.email)
     results = session.exec(select_user_exist)
     user_exist = results.first()
 
+    # 이미 등록된 사용자면 HTTPException 발생
     if user_exist:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -36,25 +39,24 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
     return {"message": "User created successfully."}
 
 
-# 사용자 로그인
 @user_router.post("/signin", response_model=TokenResponse)
 async def sign_user_in(
     user: OAuth2PasswordRequestForm = Depends(), session=Depends(get_session)
 ) -> dict:
-    # 등록된 사용자인지 체크
+    """사용자 로그인"""
+
+    # DB에 존재하는 이메일 정보 가져옴
     select_user_exist = select(User).where(User.email == user.username)
     results = session.exec(select_user_exist)
     user_exist = results.first()
 
-    # 유저가 존재하는지 체크
+    # 존재 하지 않는다면 Exception
     if not user_exist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist"
         )
 
-    # 패스워드가 일치하는지 체크
-    # if user_exist.password == user.password:
-    #     return {"message": "User signed in successfully"}
+    # 패스워드가 일치하는지 인증정보 비교 후 인증에 성공하면 토큰 발행
     if hash_password.verify_hash(user.password, user_exist.password):
         access_token = create_access_token(user_exist.email)
         return {"access_token": access_token, "token_type": "Bearer"}

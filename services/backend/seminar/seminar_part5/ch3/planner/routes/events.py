@@ -1,54 +1,72 @@
-from fastapi import APIRouter, Body, HTTPException, status, Depends
-
-
-from typing import List
-from ..models.events import Event, EventUpdate
-from ..database.connection import get_session
+from fastapi import APIRouter, Path, Body, HTTPException, status, Depends
 from sqlmodel import select
+from typing import List
+
+from ..auth.authenticate import authenticate
+from ..database.connection import get_session
+from ..models.events import Event, EventUpdate
+
 
 event_router = APIRouter(tags=["Events"])
-events = []
 
 
-# 모든 이벤트 조회
 @event_router.get("/", response_model=List[Event])
 async def retrieve_all_events(session=Depends(get_session)) -> List[Event]:
+    """모든 이벤트 조회"""
     statement = select(Event)
     events = session.exec(statement).all()
     return events
 
 
-# 특정 이벤트 조회
 @event_router.get("/{id}", response_model=Event)
-async def retrieve_event(id: int, session=Depends(get_session)) -> Event:
+async def retrieve_event(
+    id: int = Path(
+        ...,
+        title="이벤트 ID",
+        description="이벤트마다 부여되는 고유식별자, PK, 자동증가값",
+    ),
+    session=Depends(get_session),
+) -> Event:
+    """특정 이벤트 조회"""
     event = session.get(Event, id)
     if event:
         return event
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail="Event with supplied ID does not exist",
+        detail="제공된 ID에 해당하는 이벤트가 없습니다.",
     )
 
 
-# 이벤트 생성
 @event_router.post("/new")
-async def create_event(new_event: Event, session=Depends(get_session)) -> dict:
-    session.add(new_event)
+async def create_event(
+    body: Event,
+    user: str = Depends(authenticate),
+    session=Depends(get_session),
+) -> dict:
+    """이벤트 생성"""
+    session.add(body)
     session.commit()
-    session.refresh(new_event)
+    session.refresh(body)
 
-    return {"message": "Event created successfully."}
+    return {"메시지": "이벤트가 생성되었습니다."}
 
 
-# 이벤트 변경
 @event_router.put("/{id}", response_model=Event)
 async def update_event(
-    id: int, new_data: EventUpdate, session=Depends(get_session)
+    body: EventUpdate,
+    id: int = Path(
+        ...,
+        title="이벤트 ID",
+        description="이벤트마다 부여되는 고유식별자, PK, 자동증가값",
+    ),
+    user: str = Depends(authenticate),
+    session=Depends(get_session),
 ) -> Event:
+    """이벤트 변경"""
     event = session.get(Event, id)
     if event:
-        event_data = new_data.dict(exclude_unset=True)
+        event_data = body.dict(exclude_unset=True)
         for key, value in event_data.items():
             setattr(event, key, value)
         session.add(event)
@@ -58,26 +76,28 @@ async def update_event(
         return event
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail="Event with suppliedID does not exist",
+        detail="제공된 ID에 해당하는 이벤트가 없습니다.",
     )
 
 
-# 이벤트 삭제
 @event_router.delete("/{id}")
-async def delete_event(id: int, session=Depends(get_session)) -> dict:
+async def delete_event(
+    id: int = Path(
+        ...,
+        title="이벤트 ID",
+        description="이벤트마다 부여되는 고유식별자, PK, 자동증가값",
+    ),
+    user: str = Depends(authenticate),
+    session=Depends(get_session),
+) -> dict:
+    """이벤트 삭제"""
     event = session.get(Event, id)
     if event:
         session.delete(event)
         session.commit()
-        return {"message": "Event deleted successfully."}
+        return {"메시지": "이벤트가 정상적으로 삭제되었습니다."}
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail="Event with supplied ID does not exist",
+        detail="제공된 ID에 해당하는 이벤트가 없습니다.",
     )
-
-
-# 전체 이벤트 삭제
-@event_router.delete("/")
-async def delete_all_events() -> dict:
-    events.clear()

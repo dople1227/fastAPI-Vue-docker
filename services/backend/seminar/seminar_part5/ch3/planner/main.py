@@ -3,7 +3,6 @@ from .routes.users import user_router
 from .routes.events import event_router
 from .database.connection import conn, Settings
 
-
 app = FastAPI()
 # settings = Settings()
 

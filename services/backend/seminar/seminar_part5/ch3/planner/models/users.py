@@ -5,36 +5,45 @@ from .events import Event
 
 
 class User(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    email: EmailStr
-    username: str
-    password: str
-    events: Optional[List[Event]] = Field(sa_column=Column(JSON))
+    """User테이블모델, SQLModel"""
+
+    id: int = Field(
+        title="사용자ID",
+        description="사용자마다 부여되는 고유식별자, PK, 자동증가값",
+        default=None,
+        primary_key=True,
+    )
+    email: EmailStr = Field(title="이메일주소", description="이메일주소, EmailStr타입")
+    password: str = Field(title="패스워드", description="암호, bcrypt로 해싱")
+    events: Optional[List[Event]] = Field(
+        sa_column=Column(JSON), title="이벤트", description="사용자별로 생성되는 이벤트 리스트"
+    )
 
     class Config:
         schema_extra = {
             "example": {
                 "email": "fastapi@packt.com",
-                "username": "John",
                 "password": "pwd123!",
-                "events": [],
             }
         }
 
 
 class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
+    """인증 성공 시 토큰발행에 사용되는 응답모델"""
+
+    access_token: str = Field(title="토큰", description="인증 성공 시 클라이언트에 부여하는 JWT 액세스 토큰")
+    token_type: str = Field(title="토큰타입", description="토큰의 유형, Bearer")
 
 
-class UserSignIn(SQLModel):
-    email: EmailStr
-    password: str
+# 사용 안함
+# class UserSignIn(SQLModel):
+#     email: EmailStr
+#     password: str
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "email": "fastapi@packt.com",
-                "password": "Jhon",
-            }
-        }
+#     class Config:
+#         schema_extra = {
+#             "example": {
+#                 "email": "fastapi@packt.com",
+#                 "password": "Jhon",
+#             }
+#         }

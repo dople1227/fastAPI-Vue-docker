@@ -1,11 +1,15 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from auth.jwt_handler import verify_access_token
+
+from .jwt_handler import verify_access_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/signin")
 
 
 async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
+    """검증된 토큰의 사용자명을 return하는 함수.
+    라우트에 의존성 주입을 하기 위해 생성한 함수
+    """
     if not token:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Sign in for access"
