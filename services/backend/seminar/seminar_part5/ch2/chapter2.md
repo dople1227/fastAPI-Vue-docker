@@ -85,7 +85,7 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
     if user_exist:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="User with supplied email exists",
+            detail="해당 이메일은 이미 등록된 사용자입니다.",
         )
 
     # 등록된 사용자가 아니면 INSERT
@@ -94,7 +94,7 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
-    return {"message": "User created successfully."}
+    return {"message": "사용자가 등록되었습니다."}
 ```
 
 <br/>
@@ -219,17 +219,17 @@ def verify_access_token(token: str):
         if expire is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No access token supplied",
+                detail="액세스 토큰이 존재하지 않습니다.",
             )
         if datetime.utcnow() > datetime.utcfromtimestamp(expire):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Token expired!"
+                status_code=status.HTTP_403_FORBIDDEN, detail="토큰이 만료되었습니다."
             )
         return data
 
     except JWTError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="토큰정보가 잘못되었습니다."
         )
 
 ```
@@ -252,11 +252,10 @@ async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
     """
     if not token:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Sign in for access"
+            status_code=status.HTTP_403_FORBIDDEN, detail="해당 기능을 이용하려면 로그인이 필요합니다."
         )
 
     decoded_token = verify_access_token(token)
     return decoded_token["user"]
-
 ```
 
