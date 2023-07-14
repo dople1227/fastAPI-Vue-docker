@@ -12,7 +12,7 @@ def create_access_token(user: str):
     """토큰 생성 함수
     인증에 성공한 사용자에게 발행할 토큰을 생성.
     사용자명(이메일)과 만료일로 payload를 구성하고 시크릿키와 명시된 알고리즘으로
-    토큰을 생성한다.
+    인코딩하여 토큰을 생성한다.
     """
     payload = {"user": user, "expires": time.time() + 3600}
 
@@ -22,7 +22,7 @@ def create_access_token(user: str):
 
 def verify_access_token(token: str):
     """토큰 검증 함수
-    사용자명(이메일)을 입력받아 시크릿키와 알고리즘으로 디코딩 후 만료일을 체크하여
+    토큰을 입력받아 디코딩한 후 만료일을 체크하여
     유효한 토큰인지 검증한다.
     """
     try:

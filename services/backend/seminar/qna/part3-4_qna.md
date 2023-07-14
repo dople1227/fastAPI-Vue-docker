@@ -40,6 +40,8 @@
 
 #### Q8. main.py에서 @app.on_event("startapp") 형태로 이벤트를 등록하는데 해당부분에 대한 추가 설명
 
+![Alt text](image.png)
+
 <br/>
 <br/>
 

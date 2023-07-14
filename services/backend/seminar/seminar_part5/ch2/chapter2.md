@@ -40,8 +40,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class HashPassword:
-    """패스워드 암호화 클래스. bcrypt를 사용하여 암호화한다.
-    - create_hash(): 문자열로 된 패스워드를 bcrypt를 이용하여 암호화한 후 해싱된 문자열 return
+    """패스워드 해싱 함수. bcrypt를 사용하여 해싱
+    - create_hash(): 문자열로 된 패스워드를 bcrypt로 해싱한 후 해싱된 문자열 return
     - verify_hash(): 해싱되기 전 문자열과 해싱된 후의 문자열을 입력받아 같은 값인지 비교하여 T/F여부 return
     """
 
@@ -116,15 +116,12 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
 > 💡 토큰이란?  
 > - 보안과 인증을 위해 사용되는 문자열로, 주로 클라이언트가 자원에 접근할 때 신원을 증명하거나 권한을 부여하는데 사용된다.
 > - 서버에서 발급되고 클라이언트에게 전달된다. 클라이언트는 이 토큰을 사용하여 인증된 요청을 보낼 수 있고 서버는 토큰을 검증하여 요청을 승인할 수 있다.
->
-> - 주로 사용되는 토큰 기반 인증 방식
->   - JWT (JSON Web Token): 웹 표준으로 정의된 토큰 형식. JSON포멧을 사용한다.
->   - OAuth (Open Authorization): 서드파티 인증을 위한 프로토콜. 
 
-###### 토큰의 세가지 구성요소
-| 헤더(Header)                                        | 페이로드(Payload)                                                                                                    | 서명(Signature)                                                                                                    |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| 토큰의 타입과 암호화 알고리즘을 지정하는 메타데이터 | 토큰에 포함되는 클레임(claim)정보. 클레임은 토큰의 내용에 대한 정보를 포함한다. 예를들어 사용자ID, 권한, 만료시간 등 | 토큰의 무결성을 검증하기 위한 서명. 서명은 비밀키를 사용하여 생성되며, 헤더와 페이로드의 내용을 기반으로 생성된다. |
+
+###### JWT 토큰의 세가지 구성요소
+| 헤더(Header)                                        | 페이로드(Payload)                                                                                                             | 서명(Signature)                                                                    |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 토큰의 타입과 암호화 알고리즘을 지정하는 메타데이터 | 토큰에 포함되는 클레임 정보가 포함된다. 클레임은 토큰의 내용에 대한 정보를 포함한다. 예를들어 사용자ID, 권한, 토큰만료시간 등 | 토큰의 유효성을 검증하기 위해 사용되고 헤더와 페이로드,비밀키를 사용하여 생성된다. |
 
 <br/>
 
@@ -136,11 +133,16 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
 ##### 2.3.2 SECRET_KEY 작성 및 사용
 - SECRET_KEY는 보안 및 관리를 위해 코드에 직접 입력하지 않고 별도의 파일인 .env에서  작성하고 사용하도록 한다.
 
+<br/>
+
 ###### .env
+
 ```
 DATABSE_CONNECTION_STRING=sqlite:///planner.db
 SECRET_KEY=HI5HL3V3L$3CR3T
 ```
+
+<br/>
 
 ###### /database/connection.py
 ```python
@@ -199,7 +201,7 @@ def create_access_token(user: str):
     """토큰 생성 함수
     인증에 성공한 사용자에게 발행할 토큰을 생성.
     사용자명(이메일)과 만료일로 payload를 구성하고 시크릿키와 명시된 알고리즘으로
-    토큰을 생성한다.
+    인코딩하여 토큰을 생성한다.
     """
     payload = {"user": user, "expires": time.time() + 3600}
 
@@ -209,7 +211,7 @@ def create_access_token(user: str):
 
 def verify_access_token(token: str):
     """토큰 검증 함수
-    사용자명(이메일)을 입력받아 시크릿키와 알고리즘으로 디코딩 후 만료일을 체크하여
+    토큰을 입력받아 디코딩한 후 만료일을 체크하여
     유효한 토큰인지 검증한다.
     """
     try:
@@ -247,8 +249,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/signin")
 
 
 async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
-    """검증된 토큰의 사용자명을 return하는 함수.
-    라우트에 의존성 주입을 하기 위해 생성한 함수
+    """ 인증이 필요한 라우트에 의존성 주입을 통해 인증요구를 
+    검증된 토큰의 사용자명을 return
     """
     if not token:
         raise HTTPException(
@@ -259,3 +261,13 @@ async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
     return decoded_token["user"]
 ```
 
+<br/>
+
+  - #### OAuth2PasswordBearer 클래스      
+      - OAuth2PasswordBearer클래스의 __init__() 은 oauth2_scheme인스턴스 생성 시에 한번만 실행되고 oauth2_scheme를 의존성 주입 받은 authenticate()함수가 호출될 때는 __call__()이 실행된다. 
+       
+      - __call__()함수는 request의 Authorization 헤더에서 토큰을 추출하여 반환하는 역할을 한다. Bearer스키마를 사용하지 않거나 액세스 토큰이 없는 경우 HTTPException을 발생시킨다.
+       
+      - Swagger와 Redoc은 Depends()를 사용해 의존성 주입받은 라우팅 함수가 액세스 토큰을 추출하고 검증하는 함수인 경우 해당 함수를 인증이 필요한 함수로 처리한다.
+  
+![Alt text](img/part5_ch2_image4.png)

@@ -39,7 +39,7 @@ curl -X 'POST' \
 curl -X 'POST' \
     'http://127.0.0.1:8000/user/signin' \
     -H 'content-type: application/x-www-form-urlencoded' \
-    -d 'grant_type=&username=guest%40yescnc.co.kr&password=guestpwd!&scope=&client_id=&client_secret='
+    -d 'grant_type=&username=jhlee%40yescnc.co.kr&password=pwd123!&scope=&client_id=&client_secret='
 
 ###
 curl -X 'POST' \
@@ -64,7 +64,7 @@ curl -X 'PUT' \
     'http://127.0.0.1:8000/event/1' \
     -H 'accept: application/json'  \
     -H 'Content-Type: application/json' \
-    -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiamhsZWVAeWVzY25jLmNvLmtyIiwiZXhwaXJlcyI6MTY4OTIzNTcyNi42MjIwNDF9.u1eFe8-u-g-yLK8jHkUBDNMInX3Ar2u-l-Ex4iTI6kg' \
+    -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiamhsZWVAeWVzY25jLmNvLmtyIiwiZXhwaXJlcyI6MTY4OTMxMzc2My4xNTI3NjAzfQ.VGQO4Nj5qlUy6twikgNP4ZQgGVrRGEMPoRSkOyMr1CI' \
     -d '{
         "title": "PUT요청으로 변경된 타이틀 1"       
 }'

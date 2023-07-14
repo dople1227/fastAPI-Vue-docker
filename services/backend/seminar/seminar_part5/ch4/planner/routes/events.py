@@ -12,7 +12,7 @@ event_router = APIRouter(tags=["Events"])
 
 @event_router.get("/", response_model=List[Event])
 async def retrieve_all_events(session=Depends(get_session)) -> List[Event]:
-    """모든 이벤트 조회"""
+    """모든 이벤트 조회 라우팅함수"""
     statement = select(Event)
     events = session.exec(statement).all()
     return events
@@ -27,7 +27,7 @@ async def retrieve_event(
     ),
     session=Depends(get_session),
 ) -> Event:
-    """특정 이벤트 조회"""
+    """특정 이벤트 조회 라우팅함수"""
     event = session.get(Event, id)
     if event:
         return event
@@ -44,7 +44,7 @@ async def create_event(
     user: str = Depends(authenticate),
     session=Depends(get_session),
 ) -> dict:
-    """이벤트 생성"""
+    """이벤트 생성 라우팅함수"""
     body.creator = user
     session.add(body)
     session.commit()
@@ -64,7 +64,7 @@ async def update_event(
     user: str = Depends(authenticate),
     session=Depends(get_session),
 ) -> Event:
-    """이벤트 변경"""
+    """이벤트 변경 라우팅함수"""
     event = session.get(Event, id)
 
     if event:
@@ -102,7 +102,7 @@ async def delete_event(
     user: str = Depends(authenticate),
     session=Depends(get_session),
 ) -> dict:
-    """이벤트 삭제"""
+    """이벤트 삭제 라우팅함수"""
     event = session.get(Event, id)
 
     if event:

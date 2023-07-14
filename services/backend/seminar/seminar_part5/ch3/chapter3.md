@@ -1,7 +1,7 @@
 # 3. 이벤트플래너 애플리케이션에 인증모델 적용
 
 #### 3.1 로그인 라우트 변경
-- OAuth2PasswordRequestForm 클래스를 sign_user_in() 라우트 함수에 주입하여 사용
+- OAuth2PasswordRequestForm 클래스를 sign_user_in() 라우트 함수에 주입
 - x-www-form-urlencoded 타입으로 요청하고 json타입으로 응답
 
 <br/>
@@ -68,7 +68,7 @@ async def sign_user_in(
 💡Swagger,Redoc에서 request body가 form형식으로 생성되는 이유는?
 > 요청타입인 "application-x-www-form-urlencoded"는 OAuth2 프로토콜에서 권장하는 표준 요청 타입으로써 FastAPI에서 구현한 OAuth2PasswordRequestForm클래스는 application-x-www-form-urlencoded타입을 기본값으로 사용한다.
 >  
-> 로그인 라우팅 함수에 OAuth2PasswordRequestForm클래스를 의존성 주입하여 사용하고 있고 OAuth2PasswordRequestFrom클래스는 Form클래스를 사용한다.
+> 로그인 라우팅 함수는 OAuth2PasswordRequestForm클래스를 의존성 주입하여 사용하고 있고 OAuth2PasswordRequestFrom클래스는 Form클래스를 사용한다.
 > 
 > Form클래스는  media_type 매개변수에 기본값으로 "application/x-www-form-urlencoded"를 할당하고 있으며 Swagger나 Redoc은 이 Form클래스의 media_type값에 정의된 Content-type으로 문서를 생성한다.
 

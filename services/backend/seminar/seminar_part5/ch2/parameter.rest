@@ -31,10 +31,8 @@ curl --request POST
     --url http://127.0.0.1:8000/user/signup
     --header 'content-type: application/json'
     --data '{        
-        "email": "jhlee@yescnc.co.kr",
-        "username": "Juno",
-        "password": "password1!",        
-        "event": []
+        "email": "jhlee@yescnc.co.kr",        
+        "password": "pwd123!"
     }'
 
 ###

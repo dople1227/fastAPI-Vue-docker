@@ -64,7 +64,7 @@ curl -X 'PUT' \
     'http://127.0.0.1:8000/event/1' \
     -H 'accept: application/json'  \
     -H 'Content-Type: application/json' \
-    -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiamhsZWVAeWVzY25jLmNvLmtyIiwiZXhwaXJlcyI6MTY4OTIzNTcyNi42MjIwNDF9.u1eFe8-u-g-yLK8jHkUBDNMInX3Ar2u-l-Ex4iTI6kg' \
+    -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiamhsZWVAeWVzY25jLmNvLmtyIiwiZXhwaXJlcyI6MTY4OTMxMjg2NC40OTk4NjZ9.Iqrt-afgwfGorbuebQAqV-E5ZJXijAcFYgm7OmRCgCU' \
     -d '{
         "title": "PUT요청으로 변경된 타이틀 1"       
 }'
