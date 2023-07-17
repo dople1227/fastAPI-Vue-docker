@@ -11,7 +11,7 @@
             "module": "uvicorn",
             "args": [
                 // "services.backend.app.main:app",
-                "services.backend.seminar.seminar_part5.ch4.planner.main:app",
+                "services.backend.seminar.seminar_part6.ch3.planner.main:app",
                 "--reload",
                 "--host",
                 "0.0.0.0"

@@ -7,10 +7,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/signin")
 
 
 async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
-    """토큰을 검증하여 인증에 사용되는 이메일 반환
+    """토큰을 검증하여 라우팅을 허가할 지 여부결정
     검증이 필요한 라우팅함수에 의존성 추가하여 사용.
-    이 함수가 의존성 주입된 라우팅 함수에 라우팅을 요청하려면
-    Authorization헤더에 Bearer형식의 token을 함께 건내줘야함.
+    라우팅 요청 시에 Authorization헤더에 token을 함께 건내줘야함.
     """
     if not token:
         raise HTTPException(
