@@ -33,17 +33,3 @@ class TokenResponse(BaseModel):
 
     access_token: str = Field(title="토큰", description="인증 성공 시 클라이언트에 부여하는 JWT 액세스 토큰")
     token_type: str = Field(title="토큰타입", description="토큰의 유형, Bearer")
-
-
-# 사용 안함
-# class UserSignIn(SQLModel):
-#     email: EmailStr
-#     password: str
-
-#     class Config:
-#         schema_extra = {
-#             "example": {
-#                 "email": "fastapi@packt.com",
-#                 "password": "Jhon",
-#             }
-#         }

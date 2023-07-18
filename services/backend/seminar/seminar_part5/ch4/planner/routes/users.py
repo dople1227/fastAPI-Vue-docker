@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from sqlmodel import select
+from typing import List
 
 from ..auth.jwt_handler import create_access_token
 from ..auth.hash_password import HashPassword
@@ -12,6 +13,14 @@ user_router = APIRouter(
     tags=["User"],
 )
 hash_password = HashPassword()
+
+
+@user_router.get("", response_model=List[User])
+async def retrieve_all_users(session=Depends(get_session)) -> List[User]:
+    """모든 사용자 조회 라우팅함수"""
+    statement = select(User)
+    users = session.exec(statement).all()
+    return users
 
 
 @user_router.post("/signup")
@@ -35,7 +44,7 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
     new_user.password = hashed_password
     session.add(new_user)
     session.commit()
-    session.refresh(new_user)
+    # session.refresh(new_user)
     return {"message": "사용자가 등록되었습니다."}
 
 

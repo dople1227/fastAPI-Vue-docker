@@ -20,10 +20,11 @@ async def get_todos() -> dict:
 async def get_single_todo(
     todo_id: int = Path(
         ...,
-        title="Title of Path Parameter",
-        description="Description of Path Parameter",
+        title="타이틀 ",
+        description="문서화 시 보여 줄 파라미터 설명",
         gt=0,
         le=5,
+        example=4,
     )
 ) -> dict:
     for todo in todo_list:

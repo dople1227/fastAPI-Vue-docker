@@ -4,15 +4,22 @@
 
 > 💡 CORS란?  
 > 
-> 등록되지 않은 사용자가 리소스를 사용하지 못하도록 제한하는 규칙
-> 특정 클라이언트에서 우리가 만든 API를 호출하면 브라우저가 호출의 출처(도메인)를 확인하여 제한한다.
-> API와 출처(도메인)가 동일한 경우 또는 API에서 허가한 출처만 리소스에 접근할 수 있다.
+> 등록되지 않은 사용자가 리소스를 사용하지 못하도록 제한하는 규칙  
+> 특정 클라이언트에서 우리가 만든 API를 호출하면 브라우저가 호출의 출처(origin)를 확인하여 제한한다.  
+> API와 출처가 동일한 경우 또는 API에서 허가한 출처만 리소스에 접근할 수 있다.
+
+<br/>
+
+> 💡 출처(origin)란?  
+> origin은 프로토콜(http,https), 도메인(test.com, localhost, myapp.test.com), 포트(80, 8080) 의 조합을 말하며 이 중 하나의 값만 달라도 다른 origin이다.
 
 <br/>
 
 - FastAPI는 CORSMiddleware라는 미들웨어를 통해 API에 접근 가능한 도메인을 관리한다.
 - CORSMiddleware는 서버의 리소스에 접근할 수 있는 도메인 목록을 배열로 관리한다.
-- 예를 들어 특정 웹 사이트에서만 API에 접근할 수 있게 하려면 origins배열에 해당 URL을 추가하면 된다
+- 특정 웹 사이트에서만 API에 접근할 수 있게 하려면 origins배열에 해당 URL을 추가하면 된다
+
+<br/>
 
 ###### test.com도메인 에서만 API를 허용하도록 설정
 ```python
@@ -46,7 +53,13 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headears=["*"],
+    allow_headers=["*"],
 )
 ```
+
+- allow_methods에 작성될 수 있는 값 예시
+  - ["GET","POST","PUT","DELETE", ...]
+  
+- allow_headers에 작성될 수 있는 값 
+  - ["Authorization", "Content-Type", ...]
 

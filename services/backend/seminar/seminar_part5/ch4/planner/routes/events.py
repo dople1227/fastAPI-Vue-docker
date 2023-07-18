@@ -10,7 +10,7 @@ from ..models.events import Event, EventUpdate
 event_router = APIRouter(tags=["Events"])
 
 
-@event_router.get("/", response_model=List[Event])
+@event_router.get("", response_model=List[Event])
 async def retrieve_all_events(session=Depends(get_session)) -> List[Event]:
     """모든 이벤트 조회 라우팅함수"""
     statement = select(Event)

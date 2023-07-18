@@ -44,7 +44,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class HashPassword:
     """패스워드 해싱 함수. bcrypt를 사용하여 해싱
     - create_hash(): 문자열로 된 패스워드를 bcrypt로 해싱한 후 해싱된 문자열 return
-    - verify_hash(): 해싱되기 전 문자열과 해싱된 후의 문자열을 입력받아 같은 값인지 비교하여 T/F여부 return
+    - verify_hash(): 해싱되기 전 문자열과 해싱된 후의 문자열을 입력받아 같은 값인지 비교
     """
 
     def create_hash(self, password: str):
@@ -116,14 +116,15 @@ async def sign_new_user(new_user: User, session=Depends(get_session)) -> dict:
 - JWT를 이용하여 액세스 토큰을 구현하면 애플리케이션의 보안을 한 단계 더 강화할 수 있다.
  
 > 💡 토큰이란?  
-> - 보안과 인증을 위해 사용되는 문자열로, 주로 클라이언트가 자원에 접근할 때 신원을 증명하거나 권한을 부여하는데 사용된다.
+> - 보안과 인증을 위해 사용되는 문자열로, 주로 클라이언트가 자원에 접근할 때 신원을 증명하거나 클라이언트에게 권한을 부여하는데 사용된다.
 > - 서버에서 발급되고 클라이언트에게 전달된다. 클라이언트는 이 토큰을 사용하여 인증된 요청을 보낼 수 있고 서버는 토큰을 검증하여 요청을 승인할 수 있다.
 
+<br/>
 
 ###### JWT 토큰의 세가지 구성요소
-| 헤더(Header)                                        | 페이로드(Payload)                                                                                    | 서명(Signature)                                                                    |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| 토큰의 타입과 암호화 알고리즘을 지정하는 메타데이터 | 토큰에 포함되는 클레임 정보가 포함된다. 사용자명, 토큰만료시간 등 페이로드를 구성하는 요소를 말한다. | 토큰의 유효성을 검증하기 위해 사용되고 헤더와 페이로드,비밀키를 사용하여 생성된다. |
+| 헤더(Header)                                        | 페이로드(Payload)                                                                                            | 서명(Signature)                                                                                |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| 토큰의 타입과 암호화 알고리즘을 지정하는 메타데이터 | 토큰에 포함되는 클레임들로 구성된다. 클레임이란 사용자명, 토큰만료시간 등 페이로드를 구성하는 요소를 말한다. | 토큰의 무결성을 검증하기 위해 사용되며 헤더와 페이로드를 조합한 후 비밀키를 사용하여 생성된다. |
 
 <br/>
 
@@ -145,6 +146,8 @@ SECRET_KEY=HI5HL3V3L$3CR3T
 ```
 
 <br/>
+
+- .env파일에 작성한 SECRET_KEY를 관리하기 위해 Settings 클래스를 생성한다.
 
 ###### /database/connection.py
 ```python
@@ -202,8 +205,8 @@ settings = Settings()
 def create_access_token(user: str):
     """토큰 생성 함수
     인증에 성공한 사용자에게 발행할 토큰을 생성.
-    사용자명(이메일)과 만료일로 payload를 구성하고 시크릿키와 명시된 알고리즘으로
-    인코딩하여 토큰을 생성한다.
+    사용자명(이메일)과 만료일로 payload를 구성하고 시크릿키와 명시된
+    알고리즘으로 서명하여 토큰을 생성한다.
     """
     payload = {"user": user, "expires": time.time() + 3600}
 
@@ -214,7 +217,7 @@ def create_access_token(user: str):
 def verify_access_token(token: str):
     """토큰 검증 함수
     토큰을 입력받아 디코딩한 후 만료일을 체크하여
-    유효한 토큰인지 검증한다.
+    유효한 토큰인지 검증한다. 토큰의 인코딩 되기 전의 페이로드값 반환.
     """
     try:
         data = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
@@ -235,8 +238,18 @@ def verify_access_token(token: str):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="토큰정보가 잘못되었습니다."
         )
-
 ```
+
+<br/>
+
+- 토큰 생성 과정
+  - 헤더와 페이로드값을 인코딩한 후 SECRETKEY로 서명
+  
+###### .../jose/jwt.py
+| ![Alt text](img/part5_ch2_image5.png) | ![Alt text](img/part5_ch2_image6.png) |
+| ------------------------------------- | ------------------------------------- |
+
+<br/>
 
 #### 2.4 사용자 인증
 - 이벤트 라우트에 주입할 의존 라이브러리를 생성
@@ -251,8 +264,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/signin")
 
 
 async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
-    """ 인증이 필요한 라우트에 의존성 주입을 통해 인증요구를 
-    검증된 토큰의 사용자명을 return
+    """ 토큰을 디코딩 하여 검증 후 인증에 사용되는 이메일 반환
+    권한을 요구할 라우팅함수에 의존성을 주입하여 사용한다.
+    의존성이 주입된 라우팅함수에 라우팅을 요청하려면
+    Authorization헤더에 Bearer형식의 token을 함께 건내줘야함.
     """
     if not token:
         raise HTTPException(
@@ -271,5 +286,7 @@ async def authenticate(token: str = Depends(oauth2_scheme)) -> str:
       - __call__()함수는 request의 Authorization 헤더에서 토큰을 추출하여 반환하는 역할을 한다. Bearer스키마를 사용하지 않거나 액세스 토큰이 없는 경우 HTTPException을 발생시킨다.
        
       - Swagger와 Redoc은 Depends()를 사용해 의존성 주입받은 라우팅 함수가 액세스 토큰을 추출하고 검증하는 함수인 경우 해당 함수를 인증이 필요한 함수로 처리한다.
-  
+
+<br/>
+
 ![Alt text](img/part5_ch2_image4.png)
