@@ -11,7 +11,7 @@ load_dotenv(env_path)
 class Settings(BaseSettings):
     """환경변수 관리 클래스"""
 
-    DATABSE_CONNECTION_STRING: str = None
+    DATABASE_CONNECTION_STRING: str = None
     SECRET_KEY: Optional[str] = None
 
     class Config:
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 settings = Settings()
 connect_args = {"check_same_thread": False}
 engine_url = create_engine(
-    settings.DATABSE_CONNECTION_STRING, echo=True, connect_args=connect_args
+    settings.DATABASE_CONNECTION_STRING, echo=True, connect_args=connect_args
 )
 
 

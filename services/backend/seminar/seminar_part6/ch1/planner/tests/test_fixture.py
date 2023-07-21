@@ -1,5 +1,11 @@
 import pytest
-from ..models.events import EventUpdate
+import sys
+from pathlib import Path
+
+ROOT_PATH = str(Path(__file__).resolve().parents[2])
+sys.path.append(ROOT_PATH)
+
+from planner.models.events import EventUpdate
 
 
 # 픽스처 정의

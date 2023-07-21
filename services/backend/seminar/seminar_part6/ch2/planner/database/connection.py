@@ -37,3 +37,9 @@ def get_session():
     """세션 관리"""
     with Session(engine_url) as session:
         yield session
+
+
+def get_session_test():
+    """세션 관리"""
+    with Session(engine_url) as session:
+        return session

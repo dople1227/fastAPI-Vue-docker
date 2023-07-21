@@ -1,5 +1,5 @@
 import pytest
-from ..models.events import EventUpdate
+from planner.models.events import EventUpdate
 
 
 # 픽스처 정의

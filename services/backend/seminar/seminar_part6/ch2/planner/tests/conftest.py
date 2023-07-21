@@ -1,15 +1,19 @@
 import asyncio
 import httpx
 import pytest
+import sys
+from pathlib import Path
 from fastapi import Depends
 from sqlmodel import select
 
-from ..main import app
-from ..database import connection
-from ..models.events import Event
-from ..models.users import User
+ROOT_PATH = str(Path(__file__).resolve().parents[2])
+sys.path.append(ROOT_PATH)
 
-from ..database.connection import get_session
+from planner.main import app
+from planner.database import connection
+from planner.models.events import Event
+from planner.models.users import User
+from planner.database.connection import get_session_test
 
 
 @pytest.fixture(scope="session")
@@ -19,7 +23,7 @@ def event_loop():
     loop.close()
 
 
-async def init_db(session=Depends(get_session)):
+async def init_db(session=Depends(get_session_test)):
     test_settings = connection.Settings()
     test_settings.DATABSE_CONNECTION_STRING = "sqlite:///test.db"
     test_settings.initialize_database()

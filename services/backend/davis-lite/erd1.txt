@@ -1,0 +1,166 @@
+user
+-
+user_id PK INT
+login_id VARCHAR(20)
+login_password VARCHAR(128)
+require_change_password INT
+email VARCHAR(100)
+user_name VARCHAR(45)
+privilege_id INT FK >- privilege.privilege_id
+login_status INT
+created_time DATETIME
+latest_login_time DATETIME
+latest_password_change_time DATETIME
+latest_login_ip VARBINARY(16)
+retry_count INT
+
+
+dashboard
+-
+dashboard_id INT PK
+user_id INT FK >- user.user_id
+rolling_time INT
+rolling_state TINYINT(3)
+
+
+dashboard_panel
+-
+dashboard_panel_id INT PK
+dashboard_id INT FK >- dashboard.dashboard_id
+dashboard_panel_name VARCHAR(20)
+dashboard_panel_description VARCHAR(50) null
+
+
+dashboard_layout
+-
+dashboard_layout_id INT PK
+dashboard_panel_id INT FK >- dashboard_panel.dashboard_panel_id
+widget_id INT FK >- widget.widget_id
+x_position INT
+y_position INT
+width INT
+height INT
+
+
+widget
+-
+widget_id INT PK
+widget_type_id INT FK >- widget_type.widget_type_id
+widget_title VARCHAR(20)
+widget_description VARCHAR(50)
+widget_chart_type VARCHAR(20)
+
+
+widget_type_column_select
+-
+widget_type_column_select_id INT PK
+widget_id INT FK >- widget.widget_id
+widget_type_id INT FK >- widget_type.widget_type_id
+widget_type_column_id FK >- widget_type_column.widget_type_column_id
+is_checked TINYINT
+
+
+widget_type_column
+-
+widget_type_column_id INT PK
+widget_type_id INT FK >- widget_type.widget_type_id
+widget_type_column_title VARCHAR(20)
+widget_type_column_description VARCHAR(50)
+
+
+widget_type
+-
+widget_type_id INT PK
+widget_type_title VARCHAR(20)
+widget_type_description VARCHAR(50)
+
+
+privilege
+-
+privilege_id INT PK
+privilege_name VARCHAR(45)
+
+
+report
+-
+report_id INT PK
+user_id INT FK >- user.user_id
+report_title VARCHAR(20)
+report_type VARCHAR(2)
+schedule TINYINT(3)
+schedule_start_time DATETIME
+schedule_end_time DATETIME
+schedule_cron_exp VARCHAR(200)
+storage TINYINT(3)
+storage_from_time DATETIME
+storage_to_time DATETIME
+export_type TINYINT(3)
+
+
+report_history
+-
+history_id INT PK
+report_id INT FK >- report.report_id
+history_title VARCHAR(80)
+history_run_time DATETIME
+history_end_time DATETIME
+history_file_path VARCHAR(200)
+
+
+resource_cpu
+-
+cpu_id INT PK
+cpu_record_time DATETIME
+cpu_value_type VARCHAR(20)
+cpu_value VARCHAR(50)
+
+
+resource_memory
+-
+memory_id INT PK
+memory_record_time DATETIME
+memory_value_type VARCHAR(20)
+memory_value VARCHAR(50)
+
+
+resource_network
+-
+network_id INT PK
+network_record_time DATETIME
+network_value_type VARCHAR(20)
+network_value VARCHAR(50)
+
+
+resource_disk
+-
+disk_id INT PK
+disk_record_time DATETIME
+disk_value_type VARCHAR(20)
+disk_value VARCHAR(50)
+
+
+
+menu
+-
+menu_id INT PK
+menu_name VARCHAR(20)
+uri VARCHAR(20)
+privilege_id INT FK >- privilege.privilege_id
+
+
+sla
+-
+sla_id INT PK
+parent_id INT
+parameter_name VARCHAR(45)
+column_key VARCHAR(45)
+display_flag TINYINT
+critical INT
+major INT
+minor INT
+
+
+alembic_version
+-
+alembic_version_id PK INT
+alembic_version_num VARCHAR(32)

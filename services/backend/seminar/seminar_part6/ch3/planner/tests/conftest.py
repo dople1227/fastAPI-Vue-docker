@@ -3,7 +3,7 @@ import httpx
 import pytest
 import sys
 from pathlib import Path
-from sqlmodel import SQLModel, select, Session, or_
+from sqlmodel import SQLModel, select, or_
 
 ROOT_PATH = str(Path(__file__).resolve().parents[2])
 sys.path.append(ROOT_PATH)
@@ -11,8 +11,8 @@ sys.path.append(ROOT_PATH)
 from planner.main import app
 from planner.models.events import Event
 from planner.models.users import User
-from planner.database.connection import get_session_test, Settings, conn
-
+from planner.database.connection import get_session_test, Settings
+import pdb
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -21,21 +21,24 @@ def event_loop():
     loop.close()
 
 
-async def init_db():
-    test_settings = Settings()
-    test_settings.DATABSE_CONNECTION_STRING = "sqlite:///planner.db"
-    engine_url = test_settings.initialize_database()
-    SQLModel.metadata.create_all(engine_url)
+# async def init_db():
+#     test_settings = Settings()    
+#     engine_url = test_settings.initialize_database()
+#     SQLModel.metadata.create_all(engine_url)
 
 
 @pytest.fixture(scope="session")
 async def default_client():
-    await init_db()
+    # await init_db()
     async with httpx.AsyncClient(app=app, base_url="http://app") as client:
+        pdb.set_trace()
         yield client
+        
+        pdb.set_trace()
         # 리소스 정리
         session = get_session_test()
 
+        
         # 사용자 생성 테스트데이터 삭제
         sel_user = select(User).where(User.email == "test@test.com")
         sel_user_results = session.exec(sel_user).fetchall()
@@ -49,5 +52,5 @@ async def default_client():
         sel_event_results = session.exec(sel_event)
         for event in sel_event_results:
             session.delete(event)
-
+        
         session.commit()

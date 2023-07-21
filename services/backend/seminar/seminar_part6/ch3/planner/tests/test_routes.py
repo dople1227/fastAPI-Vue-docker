@@ -6,7 +6,8 @@ from pathlib import Path
 from planner.auth.jwt_handler import create_access_token
 from planner.models.events import Event
 from planner.database.connection import get_session_test
-from planner.tests.conftest import init_db
+# from planner.tests.conftest import init_db
+import pdb
 
 ROOT_PATH = str(Path(__file__).resolve().parents[2])
 sys.path.append(ROOT_PATH)
@@ -19,6 +20,7 @@ async def access_token() -> str:
 
 @pytest.fixture(scope="module")
 async def mock_event() -> Event:
+    pdb.set_trace()   
     new_event = Event(
         creator="test@test.com",
         title="테스트이벤트",
@@ -28,7 +30,7 @@ async def mock_event() -> Event:
         location="테스트 로케이션",
     )
 
-    await init_db()
+    # await init_db()
     session = get_session_test()
 
     # 이벤트 생성
@@ -45,6 +47,7 @@ async def test_get_events(default_client: httpx.AsyncClient, mock_event: Event) 
     모든 이벤트 조회 테스트
     GET /event
     """
+    pdb.set_trace()   
     response = await default_client.get("/event")
     assert response.status_code == 200
     assert response.json()[0]["id"] == mock_event.id
@@ -56,6 +59,7 @@ async def test_get_event(default_client: httpx.AsyncClient, mock_event: Event) -
     단일 이벤트 조회 테스트
     GET /event/{id}
     """
+    pdb.set_trace()   
     url = f"/event/{str(mock_event.id)}"
     response = await default_client.get(url)
     assert response.status_code == 200
@@ -156,6 +160,7 @@ async def test_get_event_again(
     데이터가 삭제되어 없어야 되기 때문이다.
     200은 오류, 404
     """
+    pdb.set_trace()   
     url = f"/event/{mock_event.id}"
     response = await default_client.get(url)
 
