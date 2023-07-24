@@ -4,7 +4,7 @@ import pytest
 import sys
 from pathlib import Path
 from fastapi import Depends
-from sqlmodel import select
+from sqlmodel import select, or_
 
 ROOT_PATH = str(Path(__file__).resolve().parents[2])
 sys.path.append(ROOT_PATH)
@@ -23,21 +23,27 @@ def event_loop():
     loop.close()
 
 
-async def init_db(session=Depends(get_session_test)):
-    test_settings = connection.Settings()
-    test_settings.DATABSE_CONNECTION_STRING = "sqlite:///test.db"
-    test_settings.initialize_database()
-    connection.conn()
-
-    async with httpx.AsyncClient(app=app, base_url="http://app") as client:
+@pytest.fixture(scope="session")
+async def default_client():    
+    async with httpx.AsyncClient(app=app, base_url="http://app") as client:        
         yield client
+        
         # 리소스 정리
-        statement = select(Event)
-        result = session.exec(statement)
-        session.delete(result)
+        session = get_session()
 
-        statement = select(User)
-        result = session.exec(statement)
-        session.delete(result)
+        for _session in session:
+            # 사용자 생성 테스트데이터 삭제
+            sel_user = select(User).where(User.email == "test@test.com")
+            sel_user_results = _session.exec(sel_user).fetchall()
+            for user in sel_user_results:
+                _session.delete(user)
 
-        session.commit()
+            # 이벤트 생성 테스트데이터 삭제
+            sel_event = select(Event).where(
+                or_(Event.title == "테스트이벤트", Event.title == "업데이트된 테스트이벤트")
+            )
+            sel_event_results = _session.exec(sel_event)
+            for event in sel_event_results:
+                _session.delete(event)
+            
+            _session.commit()

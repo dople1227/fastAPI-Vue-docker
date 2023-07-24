@@ -26,6 +26,8 @@ pytest가 실행될 때 위 ini 파일의 내용을 설정하여 실행하게 �
 > conftest가 존재하는 경로 및 하위 디렉터리에 영향을 줄 수 있다.  
 > conftest에서 정의한 픽스처는 해당 디렉터리와 하위 디렉터리에서 실행되는 모든 테스트에서 사용할 수 있다.
 
+<br/>
+
 ###### /tests/conftest.py
 ```python
 import asyncio
@@ -50,33 +52,35 @@ def event_loop():
 
 <br/>
 
-2.4 기본 클라이언트 픽스처인 default_client픽스처를 작성한다. default_client는 httpx를 통해 비동기로 실행되는 애플리케이션 인스턴스를 반환하고 있고 
-
+2.4 기본 클라이언트 픽스처인 default_client픽스처를 작성한다.  
+default_client는 httpx를 통해 비동기로 실행되는 애플리케이션 인스턴스를 반환하고 테스트를 위해 생성한 데이터들을 삭제한다.
+    - 사용자이메일: test@test.com
+    - 이벤트명: 테스트이벤트, 업데이트된 테스트이벤트(업데이트 테스트 시)
 ###### tests/conftest.py
 ```python
-
 @pytest.fixture(scope="session")
 async def default_client():    
-    async with httpx.AsyncClient(app=app, base_url="http://app") as client:
+    async with httpx.AsyncClient(app=app, base_url="http://app") as client:        
         yield client
         
-        # 리소스 정리
-        session = get_session_test()
+        # httpx 요청작업 완료 후 리소스 정리코드
+        session = get_session()
 
-        
-        # 사용자 생성 테스트데이터 삭제
-        sel_user = select(User).where(User.email == "test@test.com")
-        sel_user_results = session.exec(sel_user).fetchall()
-        for user in sel_user_results:
-            session.delete(user)
+        for _session in session:
+            # 사용자 생성 테스트데이터 삭제
+            sel_user = select(User).where(User.email == "test@test.com")
+            sel_user_results = _session.exec(sel_user).fetchall()
+            for user in sel_user_results:
+                _session.delete(user)
 
-        # 이벤트 생성 테스트데이터 삭제
-        sel_event = select(Event).where(
-            or_(Event.title == "테스트이벤트", Event.title == "업데이트된 테스트이벤트")
-        )
-        sel_event_results = session.exec(sel_event)
-        for event in sel_event_results:
-            session.delete(event)
-        
-        session.commit()
+            # 이벤트 생성 테스트데이터 삭제
+            sel_event = select(Event).where(
+                or_(Event.title == "테스트이벤트", Event.title == "업데이트된 테스트이벤트")
+            )
+            sel_event_results = _session.exec(sel_event)
+            for event in sel_event_results:
+                _session.delete(event)
+            
+            _session.commit()
+            _session.close()
 ```
