@@ -56,7 +56,7 @@ widget_type_column_select
 widget_type_column_select_id INT PK
 widget_id INT FK >- widget.widget_id
 widget_type_id INT FK >- widget_type.widget_type_id
-widget_type_column_id FK >- widget_type_column.widget_type_column_id
+widget_type_column_id INT FK >- widget_type_column.widget_type_column_id
 is_checked TINYINT
 
 

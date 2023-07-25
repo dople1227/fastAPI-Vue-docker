@@ -2,18 +2,19 @@ import pytest
 import pdb;
 
 # 파일을 열고 파일 객체를 반환하는 픽스쳐 함수 정의
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def file_fixture():
     pdb.set_trace()
+
     # 파일을 여는 코드
     file = open("test_file.txt", "w+")
-    # 파일 객체를 반환
     
+    # 파일 객체를 반환        
     pdb.set_trace()
-    yield file
+    yield file    
     
-    pdb.set_trace()
     # 정리(clean-up) 코드: 파일을 닫음    
+    pdb.set_trace()
     file.close()
     
 

@@ -22,12 +22,6 @@ def event_loop():
     loop.close()
 
 
-# async def init_db():
-#     test_settings = Settings()    
-#     engine_url = test_settings.initialize_database()
-#     SQLModel.metadata.create_all(engine_url)
-
-
 @pytest.fixture(scope="session")
 async def default_client():    
     async with httpx.AsyncClient(app=app, base_url="http://app") as client:        
@@ -37,6 +31,7 @@ async def default_client():
         session = get_session()
 
         for _session in session:
+            pdb.set_trace()
             # 사용자 생성 테스트데이터 삭제
             sel_user = select(User).where(User.email == "test@test.com")
             sel_user_results = _session.exec(sel_user).fetchall()

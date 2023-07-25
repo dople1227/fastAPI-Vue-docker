@@ -13,11 +13,14 @@ from planner.main import app
 from planner.database import connection
 from planner.models.events import Event
 from planner.models.users import User
-from planner.database.connection import get_session_test
+from planner.database.connection import get_session
 
 
 @pytest.fixture(scope="session")
 def event_loop():
+    """
+    pytest-asyncio의 event_loop함수 재정의    
+    """
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
